@@ -1,0 +1,2128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>King Moms - Haripad | Fresh Foods & Store</title>
+  <meta name="description" content="King Moms, Haripad. Premium authentic food products, retail and wholesale bulk supply.">
+  
+  <!-- Tailwind CSS & Font Awesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- SUPABASE JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Gayathri:wght@400;700&display=swap');
+    
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body { 
+      font-family: 'Plus Jakarta Sans', 'Gayathri', sans-serif; 
+      background-color: #f8fafc; 
+      color: #0f172a;
+      width: 100%;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .mic-active { animation: pulse 1.2s infinite; color: #ef4444 !important; }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.25); } 100% { transform: scale(1); } }
+    
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
+
+    /* Sticky Mobile Search Header */
+    .sticky-header-container {
+      position: sticky;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 40;
+      padding-top: env(safe-area-inset-top);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Mobile Camera Preview Container */
+    .video-preview-wrapper {
+      width: 100%;
+      max-height: 60dvh;
+      background: #000;
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    @media print {
+      body * { visibility: hidden; }
+      #printableInvoiceModal, #printableInvoiceModal * { visibility: visible; }
+      #printableInvoiceModal { position: absolute; left: 0; top: 0; width: 100%; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="relative pb-24 md:pb-16 selection:bg-red-100">
+
+  <!-- CLOUD SYNC REALTIME STATUS BAR -->
+  <div id="cloudSyncIndicator" class="bg-amber-500 text-slate-900 text-[10px] sm:text-xs font-bold py-1 px-3 text-center flex items-center justify-center gap-1.5 transition">
+    <i class="fa-solid fa-bolt-lightning text-xs"></i>
+    <span id="cloudStatusText" class="truncate">Local Mode Active • Connect Supabase manually in Admin Settings</span>
+  </div>
+
+  <!-- STICKY MOBILE-OPTIMIZED HEADER -->
+  <header class="sticky-header-container bg-[#0f172a] text-white">
+    
+    <!-- TOP ROW: King Moms Brand with Food Cart Icon + Trading Mode + Navigation -->
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 py-2 flex items-center justify-between gap-2 border-b border-slate-800">
+      
+      <!-- Brand Logo with Red Circle Food Cart -->
+      <a href="#" onclick="clearAllFilters(); return false;" class="flex items-center gap-2 flex-shrink-0">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-[#dc2626] to-[#ef4444] flex items-center justify-center shadow-lg border-2 border-amber-300 flex-shrink-0">
+          <svg class="w-5 h-5 text-white fill-current" viewBox="0 0 24 24">
+            <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+          </svg>
+        </div>
+        <div class="leading-tight">
+          <div class="flex items-center gap-1">
+            <span class="text-sm sm:text-base font-extrabold tracking-tight text-white">King <span class="text-amber-400">Moms</span></span>
+            <span class="text-[7px] bg-red-600 text-white rounded-full w-3 h-3 flex items-center justify-center font-bold">®</span>
+          </div>
+          <div class="text-[9px] text-emerald-400 font-semibold leading-none">Haripad • 690548</div>
+        </div>
+      </a>
+
+      <!-- Retail vs Wholesale Mode Switcher -->
+      <div class="bg-slate-800/90 p-0.5 rounded-xl border border-slate-700 flex items-center gap-0.5 flex-shrink-0">
+        <button type="button" onclick="setTradingMode('retail')" id="modeBtnRetail" class="px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-bold transition bg-[#ef4444] text-white shadow">
+          <i class="fa-solid fa-bag-shopping sm:mr-1"></i> <span class="hidden sm:inline">Retail</span>
+        </button>
+        <button type="button" onclick="setTradingMode('wholesale')" id="modeBtnWholesale" class="px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-bold transition text-slate-300 hover:text-white">
+          <i class="fa-solid fa-truck-ramp-box sm:mr-1"></i> <span class="hidden sm:inline">Wholesale</span>
+        </button>
+      </div>
+
+      <!-- Controls: Camera, Lang, Account, Cart, Admin -->
+      <div class="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+        <button type="button" onclick="toggleCameraModal()" title="Product Cam" class="text-slate-300 hover:text-amber-300 p-1.5 text-xs bg-slate-800 rounded-lg border border-slate-700 cursor-pointer">
+          <i class="fa-solid fa-camera"></i>
+        </button>
+
+        <button type="button" onclick="toggleLanguage()" class="text-[10px] sm:text-xs font-bold px-2 py-1 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-lg border border-slate-700 transition flex items-center gap-1 cursor-pointer">
+          <i class="fa-solid fa-globe"></i>
+          <span id="currentLangLabel">EN</span>
+        </button>
+
+        <div id="customerNavContainer"></div>
+
+        <button type="button" onclick="openCartDrawer()" class="relative flex items-center gap-1 text-[11px] sm:text-xs font-bold text-white hover:text-amber-400 transition py-1 px-2.5 bg-slate-800 rounded-lg border border-slate-700 cursor-pointer">
+          <i class="fa-solid fa-cart-shopping text-sm text-[#fdb813]"></i>
+          <span id="cartCountBadge" class="bg-[#ef4444] text-white text-[8px] sm:text-[9px] font-black rounded-full h-3.5 min-w-[14px] px-1 flex items-center justify-center">0</span>
+          <span class="hidden md:inline">Cart</span>
+        </button>
+
+        <button type="button" onclick="openAdminModal()" title="Management Portal" class="text-amber-400 hover:text-white p-1.5 text-xs bg-slate-800 rounded-lg border border-slate-600 cursor-pointer">
+          <i class="fa-solid fa-shield-halved"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- DEDICATED FULL-WIDTH MOBILE SEARCH BAR -->
+    <div class="bg-[#1e293b] py-2 px-3 sm:px-4 shadow-inner">
+      <div class="max-w-4xl mx-auto flex items-center bg-white rounded-xl overflow-hidden shadow-sm focus-within:ring-2 focus-within:ring-amber-400 border border-slate-200">
+        <select id="headerCategorySelect" onchange="handleCategoryFilter(this.value)" class="bg-slate-50 text-slate-700 font-medium text-[11px] sm:text-xs px-2.5 sm:px-3 py-2 border-r outline-none cursor-pointer max-w-[110px] sm:max-w-none truncate"></select>
+        
+        <input type="search" id="storeSearchInput" oninput="handleSearch(this.value)" placeholder="ഉൽപ്പന്നങ്ങൾ തിരയുക... Search products..." class="flex-1 px-3 py-1.5 sm:py-2 text-xs md:text-sm text-slate-900 outline-none w-full min-w-0">
+        
+        <button type="button" onclick="toggleVoiceSearch()" title="Voice Search" class="p-2 text-slate-400 hover:text-[#ef4444] transition flex-shrink-0">
+          <i class="fa-solid fa-microphone text-sm sm:text-base" id="micIcon"></i>
+        </button>
+        
+        <button type="button" onclick="handleSearch(document.getElementById('storeSearchInput').value)" class="bg-gradient-to-r from-amber-400 to-[#fdb813] hover:from-amber-500 hover:to-amber-600 text-slate-950 px-3.5 sm:px-4 py-2 transition flex items-center gap-1 font-bold text-xs flex-shrink-0">
+          <i class="fa-solid fa-magnifying-glass text-xs sm:text-sm"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- SUB HEADER: ROUTE SCHEDULE STRIP & PAYMENT BADGE -->
+    <div class="bg-[#0f172a] px-3 sm:px-4 py-1.5 text-[10px] sm:text-xs text-white border-t border-slate-800 overflow-x-auto whitespace-nowrap">
+      <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+        <div id="subHeaderRouteStrip" class="flex items-center gap-1.5 text-amber-300 font-medium truncate"></div>
+        <div id="headerPaymentBadge" class="text-emerald-400 font-bold text-[10px] flex items-center gap-1 flex-shrink-0"></div>
+      </div>
+    </div>
+
+  </header>
+
+  <!-- LISTENING STATUS -->
+  <div id="listeningStatus" class="bg-red-600 text-white text-xs py-1.5 text-center font-bold hidden flex items-center justify-center gap-2">
+    <i class="fa-solid fa-circle-notch fa-spin"></i> <span>Listening via microphone... സംസാരിക്കൂ...</span>
+  </div>
+
+  <!-- CURRENT TRADING MODE NOTICE -->
+  <div id="modeBannerNotice" class="bg-amber-100 border-b border-amber-300 py-1.5 px-3 text-center text-[11px] sm:text-xs font-bold text-amber-900 flex items-center justify-center gap-1.5"></div>
+
+  <!-- MOBILE FILTER TOGGLE BAR -->
+  <div class="md:hidden max-w-7xl mx-auto px-3 pt-3 flex items-center justify-between gap-2">
+    <button type="button" onclick="toggleMobileFilterDrawer()" class="flex-1 py-2 px-3 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-700 shadow-sm flex items-center justify-center gap-2 active:bg-slate-50">
+      <i class="fa-solid fa-sliders text-[#ef4444]"></i>
+      <span>Categories & Filters</span>
+    </button>
+    <select onchange="handleSort(this.value)" class="flex-1 py-2 px-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-700 shadow-sm outline-none">
+      <option value="featured">Sort: Featured</option>
+      <option value="price-low">Price: Low to High</option>
+      <option value="price-high">Price: High to Low</option>
+    </select>
+  </div>
+
+  <!-- MAIN CATALOG WRAPPER -->
+  <div class="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+    <div class="flex flex-col md:flex-row gap-5">
+
+      <!-- LEFT SIDEBAR -->
+      <aside id="mainSidebar" class="hidden md:block w-full md:w-64 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex-shrink-0 space-y-5">
+        <div>
+          <div class="flex items-center justify-between mb-3 border-b pb-2">
+            <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-900">Filters</h3>
+            <button type="button" onclick="clearAllFilters()" class="text-[11px] text-[#ef4444] font-semibold hover:underline">Reset</button>
+          </div>
+
+          <div class="mb-4 hidden md:block">
+            <label class="block text-xs font-bold text-slate-700 mb-1.5">Sort By</label>
+            <select id="sortSelector" onchange="handleSort(this.value)" class="w-full text-xs p-2 bg-slate-50 border rounded-xl outline-none">
+              <option value="featured">Featured / Newest</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+            </select>
+          </div>
+
+          <div class="mb-4">
+            <h4 class="text-xs font-bold text-slate-800 mb-2">Categories</h4>
+            <div id="sidebarCategoriesContainer" class="space-y-1.5 text-xs text-slate-600"></div>
+          </div>
+
+          <div class="mb-4">
+            <h4 class="text-xs font-bold text-slate-800 mb-2">Price Range (₹)</h4>
+            <div class="flex items-center gap-2">
+              <input type="number" id="minPriceInput" placeholder="Min" class="w-1/2 text-xs p-1.5 border rounded-lg bg-slate-50 outline-none">
+              <span class="text-xs text-slate-400">-</span>
+              <input type="number" id="maxPriceInput" placeholder="Max" class="w-1/2 text-xs p-1.5 border rounded-lg bg-slate-50 outline-none">
+            </div>
+            <button type="button" onclick="applyPriceFilter()" class="w-full mt-2 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-lg transition">Apply</button>
+          </div>
+
+          <div class="p-3 bg-red-50/70 border border-red-200 rounded-xl text-[11px] space-y-1 text-red-950 mb-3">
+            <div class="font-bold flex items-center gap-1.5 text-[#ef4444]">
+              <i class="fa-solid fa-box-tissue"></i> 100% Replacement
+            </div>
+            <p class="text-[10px] text-slate-600 leading-tight">പാക്കറ്റ് കേടുപാടുകൾ ഉണ്ടെങ്കിൽ ഡോർസ്റ്റെപ്പിൽ തത്സമയം മാറ്റിവെച്ചു നൽകുന്നതാണ്.</p>
+          </div>
+
+          <div class="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl text-[11px] space-y-1 text-emerald-950">
+            <div class="font-bold flex items-center gap-1.5 text-emerald-700">
+              <i class="fa-solid fa-boxes-packing"></i> Wholesale Policy
+            </div>
+            <p id="moqSidebarText" class="text-[10px] text-emerald-800 leading-tight">ഹോൾസെയിൽ ഓർഡറുകൾക്ക് മിനിമം ഓർഡർ ലിമിറ്റ് ബാധകമാണ്.</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- RIGHT PRODUCT CATALOG -->
+      <main class="flex-1">
+        <div class="flex items-center justify-between mb-3 bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
+          <div class="text-[11px] sm:text-xs text-slate-500 truncate mr-2">
+            Showing for <span id="activeFilterLabel" class="font-bold text-slate-900">"All Products"</span>
+          </div>
+          <div id="productCount" class="text-[11px] sm:text-xs font-bold text-slate-700 flex-shrink-0">0 items</div>
+        </div>
+
+        <div id="emptyStoreState" class="bg-white border-2 border-dashed border-slate-300 rounded-3xl p-8 sm:p-12 text-center">
+          <div class="w-14 h-14 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+            <i class="fa-solid fa-box-open"></i>
+          </div>
+          <h4 id="emptyStoreTitle" class="text-sm sm:text-base font-bold text-slate-800 mb-1">No products listed yet</h4>
+          <p id="emptyStoreDesc" class="text-xs text-slate-500 max-w-sm mx-auto">Click the shield icon on top-right to open Management Dashboard and add products.</p>
+        </div>
+
+        <div id="productGrid" class="hidden grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4"></div>
+      </main>
+
+    </div>
+  </div>
+
+  <!-- IN-APP CAMERA / VIDEO MODAL -->
+  <div id="cameraModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-2xl relative p-4 space-y-3">
+      <div class="flex items-center justify-between border-b pb-2">
+        <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+          <i class="fa-solid fa-camera text-[#ef4444]"></i> Product Camera Scanner
+        </h3>
+        <button type="button" onclick="stopCameraStream()" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="video-preview-wrapper flex items-center justify-center bg-black">
+        <video id="webcamFeed" autoplay playsinline muted></video>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 pt-1">
+        <button type="button" onclick="captureCameraSnapshot()" class="py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1">
+          <i class="fa-solid fa-camera-retro"></i> Capture & Use
+        </button>
+        <button type="button" onclick="stopCameraStream()" class="py-2 bg-slate-700 text-white rounded-xl text-xs font-bold">
+          Close Cam
+        </button>
+      </div>
+      <canvas id="cameraCanvas" class="hidden"></canvas>
+    </div>
+  </div>
+
+  <!-- FLOATING LIVE CHAT & CONTACT HUB -->
+  <div class="fixed bottom-4 right-3 sm:bottom-5 sm:right-5 z-40 flex flex-col items-end">
+    
+    <!-- Real-Time Chat Drawer -->
+    <div id="liveWebChatBox" class="hidden bg-white w-[calc(100vw-24px)] sm:w-96 rounded-2xl shadow-2xl border border-slate-200 overflow-hidden mb-3 transition-all duration-300">
+      <div class="bg-[#0f172a] text-white p-3 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-full bg-[#ef4444] flex items-center justify-center font-bold text-xs text-white">KM</div>
+          <div>
+            <h4 class="text-xs font-bold leading-tight">King Moms Support</h4>
+            <span class="text-[9px] text-emerald-400 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-ping"></span> Online</span>
+          </div>
+        </div>
+        <button type="button" onclick="toggleWebChatBox()" class="text-slate-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-sm"></i></button>
+      </div>
+
+      <div id="chatMessageLog" class="p-3 h-60 sm:h-64 overflow-y-auto space-y-2 text-xs bg-slate-50"></div>
+
+      <form onsubmit="handleSendWebMessage(event)" class="p-2 border-t bg-white flex items-center gap-1.5">
+        <input type="text" id="webChatMessageInput" placeholder="സന്ദേശം ടൈപ്പ് ചെയ്യുക... Message..." required class="flex-1 px-3 py-1.5 border rounded-xl text-xs outline-none focus:ring-1 focus:ring-[#ef4444]">
+        <button type="submit" class="bg-[#ef4444] hover:bg-red-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition">
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </form>
+    </div>
+
+    <!-- Contact Action Buttons Bar -->
+    <div class="flex items-center gap-1.5 sm:gap-2 bg-white/95 backdrop-blur-sm p-1 rounded-full shadow-lg border border-slate-200">
+      <a id="hubCallBtn" href="tel:+919999999999" title="Call King Moms" class="w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm transition active:scale-95 shadow">
+        <i class="fa-solid fa-phone"></i>
+      </a>
+
+      <a id="hubWhatsAppBtn" href="#" target="_blank" title="WhatsApp Chat" class="w-9 h-9 sm:w-10 sm:h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center text-lg transition active:scale-95 shadow">
+        <i class="fa-brands fa-whatsapp"></i>
+      </a>
+
+      <button type="button" onclick="toggleWebChatBox()" title="Chat Online" class="px-3 sm:px-4 h-9 sm:h-10 bg-[#ef4444] text-white rounded-full flex items-center gap-1.5 font-bold text-[11px] sm:text-xs transition active:scale-95 shadow">
+        <i class="fa-solid fa-comments text-sm"></i>
+        <span>Chat</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- PRODUCT DETAILS MODAL -->
+  <div id="productDetailsModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
+    <div class="bg-white w-full sm:max-w-3xl rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden relative max-h-[92vh] sm:max-h-[85vh] overflow-y-auto">
+      <button type="button" onclick="closeModal('productDetailsModal')" class="absolute top-3 right-3 text-slate-400 hover:text-slate-600 z-10 p-2 bg-white/80 rounded-full">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 p-4 sm:p-6 gap-4 sm:gap-6">
+        <div class="bg-amber-50/40 rounded-2xl p-4 flex items-center justify-center border border-amber-100 relative min-h-[190px]">
+          <span id="detailModalStockTag" class="absolute top-2 left-2 text-[9px] font-black px-2 py-0.5 rounded shadow"></span>
+          <img id="detailModalImg" src="" alt="Product" class="max-h-56 sm:max-h-72 object-contain">
+        </div>
+
+        <div class="flex flex-col justify-between space-y-3 sm:space-y-4">
+          <div>
+            <div class="flex items-center justify-between">
+              <span id="detailModalCategory" class="text-[9px] font-bold uppercase bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full"></span>
+              <span class="inline-flex items-center gap-1 text-[10px] font-bold text-green-700">
+                <span class="w-3 h-3 border border-green-600 p-[1.5px] rounded-[2px] bg-white flex items-center justify-center">
+                  <span class="w-1.5 h-1.5 rounded-full bg-green-600"></span>
+                </span>
+                100% Pure Veg
+              </span>
+            </div>
+
+            <h2 id="detailModalTitle" class="text-base sm:text-xl font-bold text-slate-900 mt-1.5"></h2>
+            
+            <div class="my-2 border-y py-1.5 flex items-baseline justify-between">
+              <div class="flex items-baseline gap-2">
+                <span id="detailModalOffer" class="text-xl sm:text-2xl font-black text-slate-900"></span>
+                <span class="text-xs text-slate-400 line-through" id="detailModalMrp"></span>
+              </div>
+              <span class="text-xs text-red-600 font-bold" id="detailModalDiscountLabel"></span>
+            </div>
+
+            <div id="modalBulkTiersContainer" class="hidden my-2 p-2.5 bg-amber-50 rounded-xl border border-amber-200">
+              <h4 class="text-[11px] font-bold text-amber-900 mb-1 flex items-center gap-1">
+                <i class="fa-solid fa-tags"></i> Bulk Wholesale Rates (കടകൾക്കായി)
+              </h4>
+              <div id="bulkTiersTable" class="text-[11px] text-slate-700 space-y-0.5"></div>
+            </div>
+
+            <div>
+              <p id="detailModalDescription" class="text-xs text-slate-600 leading-relaxed"></p>
+              
+              <div class="mt-2.5 grid grid-cols-2 gap-2 text-[10px] sm:text-[11px] bg-slate-50 p-2.5 rounded-xl border">
+                <div><span class="font-bold text-slate-700">Pack:</span> <span id="detailModalWeight"></span></div>
+                <div><span class="font-bold text-slate-700">Stock:</span> <span id="detailModalStockText" class="font-bold"></span></div>
+                <div class="col-span-2"><span class="font-bold text-slate-700">FSSAI:</span> <span id="detailModalFssai"></span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 pt-2">
+            <button type="button" id="detailModalAddToCartBtn" onclick="addToCartFromModal()" class="py-2.5 bg-amber-400 hover:bg-amber-500 text-slate-950 rounded-xl text-xs font-extrabold shadow transition flex items-center justify-center gap-1.5 active:scale-95">
+              <i class="fa-solid fa-cart-plus"></i> Add to Cart
+            </button>
+            <button type="button" id="detailModalBuyNowBtn" onclick="buyNowFromModal()" class="py-2.5 bg-[#ef4444] hover:bg-red-700 text-white rounded-xl text-xs font-bold shadow transition flex items-center justify-center gap-1.5 active:scale-95">
+              <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div id="customerAuthModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl p-5 sm:p-6 relative max-h-[90vh] overflow-y-auto">
+      <button type="button" onclick="closeModal('customerAuthModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="flex border-b mb-4">
+        <button type="button" onclick="switchCustomerAuthTab('login')" id="custLoginTabBtn" class="flex-1 py-2 text-xs font-bold border-b-2 border-[#ef4444] text-[#ef4444]">Sign In</button>
+        <button type="button" onclick="switchCustomerAuthTab('register')" id="custRegisterTabBtn" class="flex-1 py-2 text-xs font-bold border-b-2 border-transparent text-slate-500">Register</button>
+      </div>
+
+      <form id="customerSignInForm" onsubmit="handleCustomerLogin(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Phone Number / Shop Name</label>
+          <input type="text" id="custAuthLoginId" required class="w-full px-3 py-2 border rounded-xl text-xs outline-none focus:ring-2 focus:ring-amber-400" placeholder="Phone Number">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+          <input type="password" id="custAuthLoginPass" required class="w-full px-3 py-2 border rounded-xl text-xs outline-none focus:ring-2 focus:ring-amber-400" placeholder="••••••••">
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-amber-400 hover:bg-amber-500 text-slate-950 font-extrabold rounded-xl text-xs transition">
+          Sign In
+        </button>
+      </form>
+
+      <form id="customerRegisterForm" onsubmit="handleCustomerRegister(event)" class="space-y-2.5 hidden">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-0.5">Account Category</label>
+          <select id="custRegCategory" onchange="toggleShopNameField(this.value)" class="w-full px-3 py-2 border rounded-xl text-xs font-bold bg-slate-50">
+            <option value="wholesale">Wholesale Shop (കട ഉടമകൾ)</option>
+            <option value="retail">Retail Consumer (വ്യക്തിഗത)</option>
+          </select>
+        </div>
+
+        <div id="shopNameFieldWrapper">
+          <label class="block text-xs font-bold text-slate-700 mb-0.5">കടയുടെ പേര് / Shop Name</label>
+          <input type="text" id="custRegShopName" class="w-full px-3 py-2 border border-amber-300 rounded-xl text-xs outline-none bg-amber-50/40" placeholder="ഉദാ: ലോട്ടസ് സൂപ്പർ മാർക്കറ്റ്">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-0.5">നിങ്ങളുടെ പേര് (Name)</label>
+          <input type="text" id="custRegName" required class="w-full px-3 py-2 border rounded-xl text-xs outline-none" placeholder="പേര്">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-0.5">WhatsApp Phone Number</label>
+          <input type="tel" id="custRegPhone" required class="w-full px-3 py-2 border rounded-xl text-xs outline-none" placeholder="10-digit number">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-0.5">വിലാസം (Address)</label>
+          <textarea id="custRegAddress" required rows="2" class="w-full px-3 py-1.5 border rounded-xl text-xs outline-none" placeholder="സ്ഥലം, ജംഗ്ഷൻ..."></textarea>
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-2.5 text-xs space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-blue-900 text-[11px] flex items-center gap-1">
+              <i class="fa-solid fa-location-dot text-blue-600"></i> Google Maps Pin
+            </span>
+            <button type="button" onclick="detectGPSLocation()" class="px-2 py-0.5 bg-blue-600 text-white rounded font-bold text-[10px]">
+              Fetch GPS
+            </button>
+          </div>
+          <input type="text" id="custRegMapUrl" readonly placeholder="Maps Link" class="w-full px-2 py-1 border rounded text-[10px] bg-white text-slate-600 truncate">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-0.5">Set Password</label>
+          <input type="password" id="custRegPass" required class="w-full px-3 py-2 border rounded-xl text-xs outline-none" placeholder="••••••••">
+        </div>
+
+        <button type="submit" class="w-full py-2.5 bg-[#ef4444] hover:bg-red-700 text-white font-bold rounded-xl text-xs transition">
+          Register & Save
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- PROFILE & ORDERS MODAL -->
+  <div id="customerProfileModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full sm:max-w-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl p-5 sm:p-6 relative max-h-[85vh] overflow-y-auto">
+      <button type="button" onclick="closeModal('customerProfileModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="flex items-center gap-3 border-b pb-3 mb-3">
+        <div class="w-10 h-10 bg-amber-100 text-[#ef4444] rounded-xl flex items-center justify-center font-black text-lg">
+          <i class="fa-solid fa-store" id="profModalIcon"></i>
+        </div>
+        <div>
+          <h3 id="profModalTitle" class="font-extrabold text-slate-900 text-sm sm:text-base"></h3>
+          <p id="profModalSub" class="text-[11px] text-slate-500"></p>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <div class="bg-slate-50 p-2.5 rounded-xl border text-xs">
+          <span class="font-bold text-slate-700">Delivery Address:</span>
+          <p id="profModalAddress" class="text-slate-600 mt-0.5 font-medium"></p>
+          <div id="profModalMapLinkWrapper" class="mt-1.5"></div>
+        </div>
+
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800 mb-2">My Orders & Live Tracking</h4>
+          <div id="customerOrderHistoryList" class="space-y-2 text-xs"></div>
+        </div>
+
+        <button type="button" onclick="logoutCustomer()" class="w-full py-2 text-center text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition">
+          Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHOPPING CART DRAWER -->
+  <div id="cartDrawer" class="hidden fixed inset-0 z-50 overflow-hidden bg-black/50 backdrop-blur-sm flex justify-end">
+    <div class="w-full sm:max-w-md bg-white h-full shadow-2xl flex flex-col justify-between p-4 sm:p-6 overflow-y-auto">
+      <div>
+        <div class="flex items-center justify-between border-b pb-3 mb-3">
+          <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-cart-shopping text-amber-500"></i> Order Cart
+          </h3>
+          <button type="button" onclick="closeModal('cartDrawer')" class="text-slate-400 hover:text-slate-600 p-1">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+
+        <div id="cartShopNotice" class="mb-2 p-2 rounded-xl text-xs"></div>
+        
+        <div id="cartMoqAlert" class="hidden mb-2 p-2 rounded-xl text-xs bg-red-50 border border-red-200 text-red-700 font-bold flex items-center gap-2">
+          <i class="fa-solid fa-triangle-exclamation text-base"></i>
+          <span id="cartMoqAlertText" class="text-[11px]"></span>
+        </div>
+
+        <div id="cartItemsList" class="space-y-2.5 max-h-[42vh] sm:max-h-[38vh] overflow-y-auto"></div>
+      </div>
+
+      <div class="border-t pt-2.5 space-y-2">
+        <div class="p-2 bg-emerald-50 rounded-xl border border-emerald-200 flex items-center gap-1.5 text-[10px] text-emerald-800 font-bold">
+          <i class="fa-solid fa-shield-heart text-emerald-600"></i>
+          <span>100% Doorstep Damage Replacement Covered.</span>
+        </div>
+
+        <!-- Payment Mode -->
+        <div class="bg-slate-50 border p-2.5 rounded-2xl space-y-1 text-xs">
+          <span class="block text-[11px] font-bold text-slate-800">Select Payment:</span>
+          
+          <div class="grid grid-cols-2 gap-1.5">
+            <label class="flex items-center gap-1.5 p-2 rounded-xl bg-white border cursor-pointer">
+              <input type="radio" name="cartPayMethod" value="COD" checked class="accent-[#ef4444]" onchange="togglePaymentSelection('COD')">
+              <span class="font-bold text-[11px] text-slate-800">Cash on Delivery</span>
+            </label>
+
+            <label id="upiRadioOptionContainer" class="hidden flex items-center gap-1.5 p-2 rounded-xl bg-white border cursor-pointer">
+              <input type="radio" name="cartPayMethod" value="UPI" class="accent-[#ef4444]" onchange="togglePaymentSelection('UPI')">
+              <span class="font-bold text-[11px] text-slate-800">GPay / UPI</span>
+            </label>
+          </div>
+
+          <div id="upiPayBox" class="hidden p-2 bg-purple-50 border border-purple-200 rounded-xl text-[10px] space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-purple-900">UPI ID:</span>
+              <span id="upiDisplayId" class="font-mono bg-white px-1.5 py-0.5 rounded border"></span>
+            </div>
+            <a id="upiDeepLinkBtn" href="#" target="_blank" class="block w-full py-1 text-center bg-purple-600 text-white rounded-lg font-bold">
+              Pay via UPI App
+            </a>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between font-bold text-slate-900 px-1">
+          <span class="text-xs">Total:</span>
+          <span id="cartSubtotal" class="text-base sm:text-lg text-[#ef4444]">₹0</span>
+        </div>
+        
+        <button type="button" id="checkoutSubmitBtn" onclick="checkoutCartWhatsApp()" class="w-full py-2.5 bg-[#ef4444] hover:bg-red-700 text-white rounded-xl text-xs font-bold shadow-lg transition flex items-center justify-center gap-2 active:scale-95">
+          <i class="fa-brands fa-whatsapp text-sm"></i> Confirm Order & Dispatch
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRINTABLE DIGITAL INVOICE MODAL -->
+  <div id="printableInvoiceModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl p-4 sm:p-6 relative my-4 text-slate-800 border">
+      <div class="flex items-center justify-between border-b pb-3 mb-3 no-print">
+        <h3 class="font-bold text-xs sm:text-sm text-slate-800"><i class="fa-solid fa-file-invoice mr-1 text-[#ef4444]"></i> Digital Tax Invoice</h3>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="window.print()" class="px-3 py-1 bg-slate-900 text-white font-bold text-xs rounded-xl">
+            <i class="fa-solid fa-print mr-1"></i> Print / PDF
+          </button>
+          <button type="button" onclick="closeModal('printableInvoiceModal')" class="text-slate-400 hover:text-slate-600 p-1">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="invoicePrintArea" class="space-y-3 text-xs font-mono">
+        <div class="flex justify-between items-start border-b pb-3">
+          <div>
+            <div class="text-base font-black tracking-wider text-[#ef4444]">KING MOMS FOOD PRODUCTS</div>
+            <div class="text-[10px] text-slate-600">The Quality You Can Trust (100% Pure Veg)</div>
+            <div class="text-[9px] text-slate-500 mt-0.5">Danapady Rd, Haripad - 690548</div>
+            <div class="text-[9px] font-bold text-slate-700">FSSAI: <span id="invFssai"></span></div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-xs text-slate-900" id="invNo"></div>
+            <div class="text-[9px] text-slate-500" id="invDate"></div>
+            <div class="text-[9px] font-bold text-emerald-700 uppercase" id="invStatus"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 rounded-xl border text-[10px]">
+          <div>
+            <span class="font-bold text-slate-700 block">Billed To:</span>
+            <div id="invCustName" class="font-bold text-slate-900"></div>
+            <div id="invCustPhone" class="text-slate-600"></div>
+            <div id="invCustAddress" class="text-slate-600 truncate"></div>
+          </div>
+          <div>
+            <span class="font-bold text-slate-700 block">Details:</span>
+            <div>Mode: <span id="invTradingMode" class="font-bold uppercase"></span></div>
+            <div>Pay: <span id="invPaymentMode" class="font-bold"></span></div>
+          </div>
+        </div>
+
+        <table class="w-full text-left text-[11px] border-collapse">
+          <thead>
+            <tr class="border-b bg-slate-100 text-slate-700 font-bold">
+              <th class="p-2">Item</th>
+              <th class="p-2 text-center">Qty</th>
+              <th class="p-2 text-right">Rate</th>
+              <th class="p-2 text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody id="invItemsTable" class="divide-y divide-slate-200"></tbody>
+          <tfoot>
+            <tr class="border-t font-bold text-slate-900">
+              <td colspan="3" class="p-2 text-right">Grand Total:</td>
+              <td class="p-2 text-right text-xs text-[#ef4444]" id="invGrandTotal"></td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div class="border-t pt-2 flex justify-between items-center text-[9px] text-slate-500">
+          <div>Doorstep Damage Replacement Covered.</div>
+          <div class="font-bold text-slate-800">Authorized Signatory</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ADMIN MANAGEMENT DASHBOARD -->
+  <div id="dashboardModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
+    <div class="bg-white w-full sm:max-w-5xl rounded-t-3xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 relative max-h-[92vh] sm:max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b">
+        <div>
+          <span id="userRoleBadge" class="text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider"></span>
+          <h3 class="text-base font-bold text-slate-900 mt-0.5">Management Dashboard</h3>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="logoutAdmin()" class="text-xs px-2.5 py-1 bg-red-50 text-red-600 font-bold rounded-lg">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+          </button>
+          <button type="button" onclick="closeModal('dashboardModal')" class="text-slate-400 hover:text-slate-600 p-1">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex gap-2 border-b my-3 overflow-x-auto whitespace-nowrap text-xs">
+        <button type="button" onclick="switchTab('productsTab')" id="tabBtn-productsTab" class="tab-btn px-3 py-1.5 font-bold border-b-2 border-[#ef4444] text-[#ef4444]">Products</button>
+        <button type="button" onclick="switchTab('ordersTab')" id="tabBtn-ordersTab" class="tab-btn px-3 py-1.5 font-bold border-b-2 border-transparent text-slate-500 owner-tab">Orders</button>
+        <button type="button" onclick="switchTab('chatInboxTab')" id="tabBtn-chatInboxTab" class="tab-btn px-3 py-1.5 font-bold border-b-2 border-transparent text-slate-500 owner-tab">Live Chat</button>
+        <button type="button" onclick="switchTab('cmsTab')" id="tabBtn-cmsTab" class="tab-btn px-3 py-1.5 font-bold border-b-2 border-transparent text-slate-500 owner-tab">Categories</button>
+        <button type="button" onclick="switchTab('shopsTab')" id="tabBtn-shopsTab" class="tab-btn px-3 py-1.5 font-bold border-b-2 border-transparent text-slate-500 owner-tab">Shops</button>
+        <button type="button" onclick="switchTab('backupExportTab')" id="tabBtn-backupExportTab" class="tab-btn px-3 py-1.5 font-bold border-b-2 border-transparent text-slate-500 owner-tab">Excel Export</button>
+        <button type="button" onclick="switchTab('settingsTab')" id="tabBtn-settingsTab" class="tab-btn px-3 py-1.5 font-bold border-b-2 border-transparent text-slate-500">Supabase & Settings</button>
+        <button type="button" onclick="switchTab('securityTab')" id="tabBtn-securityTab" class="tab-btn px-3 py-1.5 font-bold border-b-2 border-transparent text-slate-500 owner-tab">Security</button>
+      </div>
+
+      <!-- TAB 1: Products -->
+      <div id="productsTab" class="tab-content space-y-4">
+        <form id="addProductForm" onsubmit="saveProduct(event)" class="bg-amber-50/50 p-3 sm:p-4 rounded-2xl border border-amber-200 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-bold text-slate-700 mb-0.5">Product Name</label>
+            <input type="text" id="prodName" required class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white" placeholder="Broken Rice (പൊടിയരി)">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-0.5">Category</label>
+            <select id="prodCategory" required class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white"></select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-0.5">Stock Status</label>
+            <select id="prodInStock" class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white font-bold">
+              <option value="true" class="text-emerald-700">In Stock</option>
+              <option value="false" class="text-red-600">Out of Stock</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-0.5">Pack Size</label>
+            <input type="text" id="prodWeight" required class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white" placeholder="500g / 1Kg">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-0.5">MRP (₹)</label>
+            <input type="number" id="prodMrp" required class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white" placeholder="60">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-0.5">Retail Price (₹)</label>
+            <input type="number" id="prodRetailPrice" required class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white" placeholder="55">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-0.5">Wholesale Base (₹)</label>
+            <input type="number" id="prodWholesalePrice" required class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white" placeholder="45">
+          </div>
+
+          <div class="sm:col-span-2 md:col-span-4 p-2.5 bg-white rounded-xl border border-amber-300">
+            <span class="text-xs font-bold text-amber-900 block mb-1">Tiered Bulk Slabs</span>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+              <div><input type="number" id="prodTier1Qty" value="10" placeholder="Tier 1 Qty" class="w-full p-1 border rounded-lg text-xs"></div>
+              <div><input type="number" id="prodTier1Price" placeholder="Tier 1 Price" class="w-full p-1 border rounded-lg text-xs"></div>
+              <div><input type="number" id="prodTier2Qty" value="50" placeholder="Tier 2 Qty" class="w-full p-1 border rounded-lg text-xs"></div>
+              <div><input type="number" id="prodTier2Price" placeholder="Tier 2 Price" class="w-full p-1 border rounded-lg text-xs"></div>
+            </div>
+          </div>
+
+          <div class="sm:col-span-2 md:col-span-4">
+            <input type="text" id="prodDesc" class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white" placeholder="Product Description">
+          </div>
+          <div class="sm:col-span-2 md:col-span-3">
+            <input type="file" id="prodImage" accept="image/*" class="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:bg-amber-100">
+          </div>
+          <div class="flex items-end">
+            <button type="submit" class="w-full py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow">
+              Save Product
+            </button>
+          </div>
+        </form>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs min-w-[500px]">
+            <thead class="bg-slate-100 text-slate-600 font-bold">
+              <tr>
+                <th class="p-2">Image</th>
+                <th class="p-2">Title</th>
+                <th class="p-2">Stock</th>
+                <th class="p-2">Retail</th>
+                <th class="p-2">Wholesale</th>
+                <th class="p-2 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="adminProductTable" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 2: Orders -->
+      <div id="ordersTab" class="tab-content hidden space-y-3">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs min-w-[550px]">
+            <thead class="bg-slate-200 text-slate-700 font-bold">
+              <tr>
+                <th class="p-2">Bill No</th>
+                <th class="p-2">Store/Customer</th>
+                <th class="p-2">Total</th>
+                <th class="p-2">Status</th>
+                <th class="p-2 text-center">Change</th>
+                <th class="p-2 text-right">Invoice</th>
+              </tr>
+            </thead>
+            <tbody id="adminOrdersTableBody" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 3: Chat Inbox -->
+      <div id="chatInboxTab" class="tab-content hidden space-y-3">
+        <div class="bg-white rounded-2xl border p-3 flex flex-col justify-between h-80">
+          <div class="border-b pb-1.5 flex items-center justify-between">
+            <span class="font-bold text-xs text-slate-800">Live Customer Queries</span>
+            <button type="button" onclick="clearAdminChatHistory()" class="text-[10px] text-red-600">Clear</button>
+          </div>
+          <div id="adminChatMessagesArea" class="flex-1 overflow-y-auto space-y-2 p-2 text-xs bg-slate-50 rounded-xl"></div>
+          <form onsubmit="handleAdminSendReply(event)" class="pt-2 flex items-center gap-1.5">
+            <input type="text" id="adminReplyInput" required placeholder="Type reply..." class="flex-1 px-3 py-1.5 border rounded-xl text-xs outline-none">
+            <button type="submit" class="px-3 py-1.5 bg-[#ef4444] text-white rounded-xl font-bold text-xs">Send</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- TAB 4: CMS -->
+      <div id="cmsTab" class="tab-content hidden space-y-3">
+        <button type="button" onclick="addNewCategoryRow()" class="px-3 py-1.5 bg-amber-400 text-slate-900 font-bold rounded-xl text-xs">+ Add Category</button>
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-200 text-slate-700">
+            <tr><th class="p-2">ID</th><th class="p-2">English</th><th class="p-2">Malayalam</th><th class="p-2 text-right">Del</th></tr>
+          </thead>
+          <tbody id="cmsCategoryTableBody" class="divide-y divide-slate-200"></tbody>
+        </table>
+        <button type="button" onclick="saveAllCMSContent()" class="w-full py-2 bg-emerald-600 text-white font-bold rounded-xl text-xs">Save Categories</button>
+      </div>
+
+      <!-- TAB 5: Registered Shops -->
+      <div id="shopsTab" class="tab-content hidden space-y-3">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs min-w-[500px]">
+            <thead class="bg-slate-200 text-slate-700 font-bold">
+              <tr><th class="p-2">Name</th><th class="p-2">Type</th><th class="p-2">Phone</th><th class="p-2">Address</th><th class="p-2 text-center">GPS</th></tr>
+            </thead>
+            <tbody id="registeredShopsTableBody" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 6: Export -->
+      <div id="backupExportTab" class="tab-content hidden space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <button type="button" onclick="exportToCSV('orders')" class="p-3 bg-slate-50 border rounded-2xl text-xs font-bold text-slate-800 hover:bg-slate-100">Export Orders (CSV)</button>
+          <button type="button" onclick="exportToCSV('shops')" class="p-3 bg-slate-50 border rounded-2xl text-xs font-bold text-slate-800 hover:bg-slate-100">Export Shops (CSV)</button>
+          <button type="button" onclick="exportToCSV('products')" class="p-3 bg-slate-50 border rounded-2xl text-xs font-bold text-slate-800 hover:bg-slate-100">Export Products (CSV)</button>
+        </div>
+      </div>
+
+      <!-- TAB 7: Settings -->
+      <div id="settingsTab" class="tab-content hidden space-y-3">
+        <div class="p-3 bg-amber-50 rounded-2xl border border-amber-300 space-y-2 text-xs">
+          <span class="font-bold text-amber-950 block">⚡ Manual Supabase Connection (Optional)</span>
+          <div class="space-y-2">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-0.5">Project URL (ഉദാ: https://xyz.supabase.co)</label>
+              <input type="text" id="sbProjectUrl" placeholder="https://xyz.supabase.co" class="w-full p-2 border rounded-xl text-xs bg-white font-mono">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-0.5">Anon Public Key (sb_publishable_...)</label>
+              <input type="text" id="sbAnonKey" placeholder="sb_publishable_..." class="w-full p-2 border rounded-xl text-xs bg-white font-mono">
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-50 rounded-2xl border grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-600 mb-0.5">FSSAI Number</label>
+            <input type="text" id="settingFssai" placeholder="FSSAI Number" class="w-full p-2 border rounded-xl text-xs bg-white font-mono">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-600 mb-0.5">Delivery Route Schedule</label>
+            <input type="text" id="settingRouteSchedule" placeholder="Route Schedule" class="w-full p-2 border rounded-xl text-xs bg-white">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-600 mb-0.5">WhatsApp Number (91xxxxxxxxxx)</label>
+            <input type="text" id="settingWhatsapp" placeholder="WhatsApp Number" class="w-full p-2 border rounded-xl text-xs bg-white">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-600 mb-0.5">UPI ID (Optional)</label>
+            <input type="text" id="settingUpiId" placeholder="UPI ID" class="w-full p-2 border rounded-xl text-xs bg-white font-mono">
+          </div>
+        </div>
+
+        <button type="button" onclick="saveNotificationAndPaymentSettings()" class="w-full py-2.5 bg-slate-900 text-white font-bold rounded-xl text-xs">Save Settings & Connect</button>
+      </div>
+
+      <!-- TAB 8: Security -->
+      <div id="securityTab" class="tab-content hidden space-y-2 max-w-sm text-xs">
+        <input type="text" id="newOwnerUsername" placeholder="New Username" class="w-full p-2 border rounded-xl bg-white">
+        <input type="password" id="newOwnerPassword" placeholder="New Password" class="w-full p-2 border rounded-xl bg-white">
+        <button type="button" onclick="updateOwnerCredentials()" class="px-4 py-2 bg-[#ef4444] text-white font-bold rounded-xl">Update Login</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ADMIN LOGIN MODAL -->
+  <div id="loginModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-6 relative">
+      <button type="button" onclick="closeModal('loginModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      <h3 class="text-sm font-bold text-slate-800 text-center mb-3">Management Portal Login</h3>
+      <form onsubmit="handleAdminLogin(event)" class="space-y-3">
+        <input type="text" id="adminLoginUser" required placeholder="Username / ID" class="w-full px-3 py-2 border rounded-xl text-xs outline-none">
+        <input type="password" id="adminLoginPass" placeholder="Password" class="w-full px-3 py-2 border rounded-xl text-xs outline-none">
+        <p id="adminLoginErr" class="text-xs text-red-600 font-semibold hidden"></p>
+        <button type="submit" class="w-full py-2 bg-[#ef4444] hover:bg-red-700 text-white rounded-xl text-xs font-bold">Log In</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== JAVASCRIPT MASTER ENGINE ==================== -->
+  <script>
+    const DEFAULT_CATEGORIES = [
+      { id: "Rice & Cereals", en: "Rice & Cereals", ml: "അരി & ധാന്യങ്ങൾ" },
+      { id: "Spices & Powders", en: "Spices & Powders", ml: "മസാലപ്പൊടികൾ" },
+      { id: "Snacks & Bakery", en: "Snacks & Bakery", ml: "സ്നാക്ക്സ് & ബേക്കറി" },
+      { id: "Pickles & Special", en: "Pickles & Special", ml: "അച്ചാറുകൾ & സ്പെഷ്യൽ" }
+    ];
+
+    const DEFAULT_CONFIG = {
+      ownerUsername: 'ajibasheerkply',
+      ownerPassword: 'ajibasheerkply',
+      staffId: "mom'skply",
+      whatsappNumber: '919999999999',
+      upiId: '',
+      fssaiNumber: '11324001000123',
+      routeSchedule: 'ഹരിപ്പാട്-കായംകുളം: ചൊവ്വ, വെള്ളി',
+      minWholesaleQty: 5,
+      minWholesaleValue: 300,
+      supabaseUrl: "",
+      supabaseKey: ""
+    };
+
+    let appConfig = JSON.parse(localStorage.getItem('moms_config')) || DEFAULT_CONFIG;
+    let customCategories = JSON.parse(localStorage.getItem('moms_custom_cats')) || DEFAULT_CATEGORIES;
+    let products = JSON.parse(localStorage.getItem('moms_products')) || [];
+    let registeredShops = JSON.parse(localStorage.getItem('moms_registered_shops')) || [];
+    let allOrders = JSON.parse(localStorage.getItem('moms_all_orders')) || [];
+    let chatMessages = JSON.parse(localStorage.getItem('moms_chat_messages')) || [];
+    let currentShop = JSON.parse(localStorage.getItem('moms_active_shop')) || null;
+    let cart = JSON.parse(localStorage.getItem('moms_cart')) || [];
+    let tradingMode = localStorage.getItem('moms_trading_mode') || 'retail';
+    let selectedPaymentMode = 'COD';
+    let currentRole = null;
+    let activeFilter = 'all';
+    let currentSort = 'featured';
+    let currentSearch = '';
+    let minPrice = null;
+    let maxPrice = null;
+    let selectedModalProduct = null;
+    let currentLang = localStorage.getItem('moms_lang') || 'en';
+    let cameraStream = null;
+
+    // Renamed to sbClient to prevent conflict with window.supabase SDK object
+    let sbClient = null;
+    let isCloudConnected = false;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initSupabase();
+    });
+
+    function initSupabase() {
+      const url = (appConfig.supabaseUrl || "").trim().replace(/[\[\]]/g, '');
+      const key = (appConfig.supabaseKey || "").trim();
+
+      if (url && key && url.startsWith('http') && window.supabase && window.supabase.createClient) {
+        try {
+          sbClient = window.supabase.createClient(url, key);
+          isCloudConnected = true;
+          document.getElementById('cloudSyncIndicator').className = "bg-emerald-600 text-white text-[10px] sm:text-xs font-bold py-1 px-3 text-center flex items-center justify-center gap-1.5";
+          document.getElementById('cloudStatusText').innerText = "✓ Connected to Supabase Realtime";
+          fetchProductsFromSupabase();
+          fetchOrdersFromSupabase();
+          fetchChatsFromSupabase();
+          setupSupabaseRealtime();
+        } catch (err) {
+          console.error("Supabase connect error:", err);
+          setupOfflineFallback();
+        }
+      } else {
+        setupOfflineFallback();
+      }
+      initApp();
+    }
+
+    function setupOfflineFallback() {
+      sbClient = null;
+      isCloudConnected = false;
+      document.getElementById('cloudSyncIndicator').className = "bg-amber-500 text-slate-900 text-[10px] sm:text-xs font-bold py-1 px-3 text-center flex items-center justify-center gap-1.5";
+      document.getElementById('cloudStatusText').innerText = "Local Mode Active • Connect Supabase manually in Admin Settings";
+    }
+
+    async function fetchProductsFromSupabase() {
+      if (!sbClient) return;
+      const { data, error } = await sbClient.from('products').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        products = data.map(p => ({
+          id: p.id,
+          name: p.name,
+          category: p.category,
+          inStock: p.in_stock,
+          weight: p.weight,
+          mrp: Number(p.mrp),
+          retailPrice: Number(p.retail_price),
+          wholesalePrice: Number(p.wholesale_price),
+          tier1Qty: p.tier1_qty,
+          tier1Price: p.tier1_price,
+          tier2Qty: p.tier2_qty,
+          tier2Price: p.tier2_price,
+          desc: p.description,
+          image: p.image
+        }));
+        localStorage.setItem('moms_products', JSON.stringify(products));
+        renderStorefront();
+        if (currentRole) renderAdminTable();
+      }
+    }
+
+    async function fetchOrdersFromSupabase() {
+      if (!sbClient) return;
+      const { data, error } = await sbClient.from('orders').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        allOrders = data.map(o => ({
+          billNo: o.bill_no || o.id,
+          date: o.date,
+          customerName: o.customer_name,
+          phone: o.phone,
+          address: o.address,
+          mapUrl: o.map_url,
+          tradingMode: o.trading_mode,
+          paymentMode: o.payment_mode,
+          items: o.items || [],
+          total: o.total,
+          status: o.status
+        }));
+        localStorage.setItem('moms_all_orders', JSON.stringify(allOrders));
+        if (currentRole) renderAdminOrdersTable();
+        if (currentShop) renderCustomerOrderHistory();
+      }
+    }
+
+    async function fetchChatsFromSupabase() {
+      if (!sbClient) return;
+      const { data, error } = await sbClient.from('chats').select('*').order('created_at', { ascending: true }).limit(50);
+      if (!error && data) {
+        chatMessages = data.map(c => ({
+          sender: c.user_sender || 'user',
+          text: c.text,
+          time: c.time,
+          userTag: c.user_tag
+        }));
+        localStorage.setItem('moms_chat_messages', JSON.stringify(chatMessages));
+        renderChatStream();
+        if (currentRole) renderAdminChatInbox();
+      }
+    }
+
+    function setupSupabaseRealtime() {
+      if (!sbClient) return;
+      sbClient.channel('custom-all-channel')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => fetchProductsFromSupabase())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => fetchOrdersFromSupabase())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'chats' }, () => fetchChatsFromSupabase())
+        .subscribe();
+    }
+
+    function initApp() {
+      applyTradingModeUI();
+      renderCategoryInterfaces();
+      updatePaymentNoticeBadge();
+      updateHeaderFssaiAndRoute();
+      updateCustomerHeader();
+      updateCartBadge();
+      updateHubContactButtons();
+      renderChatStream();
+      renderStorefront();
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    /* ---------------- CAMERA / VIDEO FUNCTIONS ---------------- */
+    async function toggleCameraModal() {
+      const modal = document.getElementById('cameraModal');
+      if (!modal.classList.contains('hidden')) {
+        stopCameraStream();
+        return;
+      }
+      modal.classList.remove('hidden');
+      try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+          audio: false
+        });
+        document.getElementById('webcamFeed').srcObject = cameraStream;
+      } catch (err) {
+        alert("ക്യാമറ ഓപ്പൺ ചെയ്യാൻ സാധിച്ചില്ല: " + err.message);
+        modal.classList.add('hidden');
+      }
+    }
+
+    function stopCameraStream() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(t => t.stop());
+        cameraStream = null;
+      }
+      document.getElementById('webcamFeed').srcObject = null;
+      closeModal('cameraModal');
+    }
+
+    function captureCameraSnapshot() {
+      const video = document.getElementById('webcamFeed');
+      const canvas = document.getElementById('cameraCanvas');
+      if (!video.videoWidth) return;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      window.capturedProductImage = dataUrl;
+      stopCameraStream();
+      alert("ഫോട്ടോ ക്യാപ്ചർ ചെയ്തു! ഇനി അഡ്മിൻ പാനലിൽ പുതിയ പ്രൊഡക്റ്റ് ആഡ് ചെയ്യുമ്പോൾ ഈ ഫോട്ടോ ഓട്ടോമാറ്റിക് ആയി സേവ് ആകും.");
+    }
+
+    /* ---------------- VOICE SEARCH ---------------- */
+    function toggleVoiceSearch() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) return alert("നിങ്ങളുടെ ബ്രൗസറിൽ വോയിസ് സെർച്ച് സപ്പോർട്ട് ചെയ്യുന്നില്ല.");
+      const recognition = new SpeechRecognition();
+      recognition.lang = currentLang === 'ml' ? 'ml-IN' : 'en-IN';
+      const micIcon = document.getElementById('micIcon');
+      const statusBar = document.getElementById('listeningStatus');
+
+      recognition.onstart = () => {
+        micIcon.classList.add('mic-active');
+        statusBar.classList.remove('hidden');
+      };
+      recognition.onresult = (e) => {
+        const transcript = e.results[0][0].transcript;
+        document.getElementById('storeSearchInput').value = transcript;
+        handleSearch(transcript);
+      };
+      recognition.onend = () => {
+        micIcon.classList.remove('mic-active');
+        statusBar.classList.add('hidden');
+      };
+      recognition.start();
+    }
+
+    function toggleMobileFilterDrawer() {
+      const sb = document.getElementById('mainSidebar');
+      sb.classList.toggle('hidden');
+      if (!sb.classList.contains('hidden')) {
+        sb.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function updateHeaderFssaiAndRoute() {
+      const routeStrip = document.getElementById('subHeaderRouteStrip');
+      routeStrip.innerHTML = `<i class="fa-solid fa-truck text-amber-400"></i> <span class="truncate"><strong>റൂട്ട്:</strong> ${appConfig.routeSchedule || 'ഹരിപ്പാട് & സമീപ പ്രദേശങ്ങൾ'}</span>`;
+    }
+
+    function updateHubContactButtons() {
+      const cleanPhone = (appConfig.whatsappNumber || "919999999999").replace(/\D/g, '');
+      document.getElementById('hubCallBtn').href = `tel:+${cleanPhone}`;
+      document.getElementById('hubWhatsAppBtn').href = `https://wa.me/${cleanPhone}?text=${encodeURIComponent("ഹലോ King Moms, എനിക്ക് ഉൽപ്പന്നങ്ങൾ സംബന്ധിച്ച് വിവരങ്ങൾ അറിയാനുണ്ട്.")}`;
+    }
+
+    function toggleWebChatBox() {
+      document.getElementById('liveWebChatBox').classList.toggle('hidden');
+    }
+
+    function renderChatStream() {
+      const log = document.getElementById('chatMessageLog');
+      log.innerHTML = '';
+      if (chatMessages.length === 0) {
+        log.innerHTML = `<div class="bg-white border rounded-xl p-2.5 text-slate-800 shadow-sm max-w-[90%] text-[11px]">നമസ്കാരം! King Moms ഓൺലൈൻ സപ്പോർട്ടിലേക്ക് സ്വാഗതം. നിങ്ങളുടെ ചോദ്യങ്ങൾ ഇവിടെ ചോദിക്കാം.</div>`;
+        return;
+      }
+      chatMessages.forEach(m => {
+        const div = document.createElement('div');
+        div.className = m.sender === 'user' ? "flex justify-end" : "flex justify-start";
+        div.innerHTML = `<div class="${m.sender === 'user' ? 'bg-[#ef4444] text-white' : 'bg-white border text-slate-800'} rounded-2xl p-2.5 shadow-sm max-w-[85%] text-[11px]">${m.text}<div class="text-[8px] opacity-70 mt-0.5 text-right">${m.time}</div></div>`;
+        log.appendChild(div);
+      });
+      log.scrollTop = log.scrollHeight;
+    }
+
+    async function handleSendWebMessage(e) {
+      e.preventDefault();
+      const input = document.getElementById('webChatMessageInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const userTag = currentShop ? (currentShop.shopName || currentShop.name) : 'Guest Visitor';
+      const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+      if (sbClient) {
+        await sbClient.from('chats').insert([{ user_sender: 'user', user_tag: userTag, text, time: timeStr }]);
+      } else {
+        chatMessages.push({ sender: 'user', userTag, text, time: timeStr });
+        localStorage.setItem('moms_chat_messages', JSON.stringify(chatMessages));
+        renderChatStream();
+      }
+      input.value = '';
+    }
+
+    function setTradingMode(mode) {
+      tradingMode = mode;
+      localStorage.setItem('moms_trading_mode', mode);
+      applyTradingModeUI();
+      renderStorefront();
+      if (!document.getElementById('cartDrawer').classList.contains('hidden')) openCartDrawer();
+    }
+
+    function applyTradingModeUI() {
+      const btnRetail = document.getElementById('modeBtnRetail');
+      const btnWholesale = document.getElementById('modeBtnWholesale');
+      const banner = document.getElementById('modeBannerNotice');
+      const moqSide = document.getElementById('moqSidebarText');
+
+      if (tradingMode === 'wholesale') {
+        btnWholesale.className = "px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-bold transition bg-[#ef4444] text-white shadow";
+        btnRetail.className = "px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-bold transition text-slate-300 hover:text-white";
+        banner.innerHTML = `<i class="fa-solid fa-truck-ramp-box text-[#ef4444]"></i> <span><strong>ഹോൾസെയിൽ മോഡ്:</strong> മിനിമം ${appConfig.minWholesaleQty || 5} പാക്കറ്റ് / ₹${appConfig.minWholesaleValue || 300}.</span>`;
+        banner.className = "bg-amber-100 border-b border-amber-300 py-1.5 px-3 text-center text-[10px] sm:text-xs font-bold text-amber-900 flex items-center justify-center gap-1.5";
+        moqSide.innerText = `ഹോൾസെയിൽ ഓർഡറുകൾക്ക് കുറഞ്ഞത് ${appConfig.minWholesaleQty || 5} പാക്കറ്റ് അല്ലെങ്കിൽ ₹${appConfig.minWholesaleValue || 300} ആവശ്യമാണ്.`;
+      } else {
+        btnRetail.className = "px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-bold transition bg-[#ef4444] text-white shadow";
+        btnWholesale.className = "px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-bold transition text-slate-300 hover:text-white";
+        banner.innerHTML = `<i class="fa-solid fa-bag-shopping text-emerald-600"></i> <span><strong>റീട്ടെയിൽ മോഡ്:</strong> ചില്ലറ വിൽപ്പന നിരക്കുകൾ. മിനിമം ലിമിറ്റുകൾ ഇല്ല.</span>`;
+        banner.className = "bg-emerald-50 border-b border-emerald-200 py-1.5 px-3 text-center text-[10px] sm:text-xs font-bold text-emerald-900 flex items-center justify-center gap-1.5";
+        moqSide.innerText = "റീട്ടെയിൽ ഉപഭോക്താക്കൾക്ക് മിനിമം ഓർഡർ പരിധിയില്ലാതെ ഒറ്റ പാക്കറ്റും വാങ്ങാം.";
+      }
+    }
+
+    function updatePaymentNoticeBadge() {
+      const badge = document.getElementById('headerPaymentBadge');
+      if (appConfig.upiId) {
+        badge.innerHTML = `<i class="fa-solid fa-qrcode text-purple-400"></i> <span>COD & UPI</span>`;
+      } else {
+        badge.innerHTML = `<i class="fa-solid fa-hand-holding-dollar"></i> <span>COD Available</span>`;
+      }
+    }
+
+    function togglePaymentSelection(mode) {
+      selectedPaymentMode = mode;
+      const upiBox = document.getElementById('upiPayBox');
+      if (mode === 'UPI') {
+        upiBox.classList.remove('hidden');
+        document.getElementById('upiDisplayId').innerText = appConfig.upiId;
+        const subtotal = calculateCartTotal();
+        const upiUrl = `upi://pay?pa=${encodeURIComponent(appConfig.upiId)}&pn=KingMoms&am=${subtotal}&cu=INR&tn=KingMomsOrder`;
+        document.getElementById('upiDeepLinkBtn').href = upiUrl;
+      } else {
+        upiBox.classList.add('hidden');
+      }
+    }
+
+    function detectGPSLocation() {
+      if (!navigator.geolocation) return alert("Geolocation not supported.");
+      const mapInput = document.getElementById('custRegMapUrl');
+      mapInput.value = "Fetching GPS coordinates...";
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          mapInput.value = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+          alert("GPS Coordinates Saved!");
+        },
+        () => { alert("Failed to fetch location."); mapInput.value = ""; }
+      );
+    }
+
+    function toggleShopNameField(val) {
+      document.getElementById('shopNameFieldWrapper').classList.toggle('hidden', val !== 'wholesale');
+    }
+
+    function renderCategoryInterfaces() {
+      const headerSelect = document.getElementById('headerCategorySelect');
+      const sideContainer = document.getElementById('sidebarCategoriesContainer');
+      const prodCatSelect = document.getElementById('prodCategory');
+      const isMl = (currentLang === 'ml');
+
+      headerSelect.innerHTML = `<option value="all">${isMl ? 'എല്ലാം' : 'All'}</option>`;
+      customCategories.forEach(cat => { headerSelect.innerHTML += `<option value="${cat.id}">${isMl ? cat.ml : cat.en}</option>`; });
+
+      sideContainer.innerHTML = `<label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="sideCat" value="all" ${activeFilter === 'all' ? 'checked' : ''} onchange="filterByCategory(this.value)" class="accent-[#ef4444]"> <span>${isMl ? 'എല്ലാ ഉൽപ്പന്നങ്ങളും' : 'All Items'}</span></label>`;
+      customCategories.forEach(cat => {
+        sideContainer.innerHTML += `<label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="sideCat" value="${cat.id}" ${activeFilter === cat.id ? 'checked' : ''} onchange="filterByCategory(this.value)" class="accent-[#ef4444]"> <span>${isMl ? cat.ml : cat.en}</span></label>`;
+      });
+
+      prodCatSelect.innerHTML = '';
+      customCategories.forEach(cat => { prodCatSelect.innerHTML += `<option value="${cat.id}">${cat.en} (${cat.ml})</option>`; });
+    }
+
+    function toggleLanguage() {
+      currentLang = (currentLang === 'en') ? 'ml' : 'en';
+      localStorage.setItem('moms_lang', currentLang);
+      document.getElementById('currentLangLabel').innerText = (currentLang === 'en') ? 'EN' : 'ML';
+      renderCategoryInterfaces();
+      renderStorefront();
+    }
+
+    function updateCustomerHeader() {
+      const container = document.getElementById('customerNavContainer');
+      if (currentShop) {
+        const isWholesale = currentShop.type === 'wholesale';
+        const displayName = isWholesale ? (currentShop.shopName || currentShop.name) : currentShop.name;
+        container.innerHTML = `
+          <button type="button" onclick="openCustomerProfile()" class="text-left text-xs leading-tight hover:text-amber-400 transition flex items-center gap-1">
+            <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-amber-400 text-slate-950 font-black flex items-center justify-center text-xs shadow"><i class="fa-solid ${isWholesale ? 'fa-store' : 'fa-user'}"></i></div>
+            <div class="hidden sm:block"><div class="text-[9px] text-amber-300 font-bold truncate max-w-[80px]">${displayName}</div><div class="font-extrabold text-[10px]">${isWholesale ? 'Store' : 'Account'}</div></div>
+          </button>
+        `;
+      } else {
+        container.innerHTML = `
+          <button type="button" onclick="openCustomerAuthModal()" class="text-left text-xs leading-tight hover:text-amber-400 transition flex items-center gap-1">
+            <i class="fa-solid fa-circle-user text-base sm:text-lg text-amber-400"></i>
+            <span class="hidden sm:inline text-[11px] font-bold">Sign In</span>
+          </button>
+        `;
+      }
+    }
+
+    function openCustomerAuthModal() { document.getElementById('customerAuthModal').classList.remove('hidden'); }
+    function switchCustomerAuthTab(tab) {
+      document.getElementById('customerSignInForm').classList.toggle('hidden', tab !== 'login');
+      document.getElementById('customerRegisterForm').classList.toggle('hidden', tab === 'login');
+      document.getElementById('custLoginTabBtn').className = tab === 'login' ? "flex-1 py-2 text-xs font-bold border-b-2 border-[#ef4444] text-[#ef4444]" : "flex-1 py-2 text-xs font-bold border-b-2 border-transparent text-slate-500";
+      document.getElementById('custRegisterTabBtn').className = tab !== 'login' ? "flex-1 py-2 text-xs font-bold border-b-2 border-[#ef4444] text-[#ef4444]" : "flex-1 py-2 text-xs font-bold border-b-2 border-transparent text-slate-500";
+    }
+
+    function handleCustomerRegister(e) {
+      e.preventDefault();
+      const type = document.getElementById('custRegCategory').value;
+      const shopName = document.getElementById('custRegShopName').value.trim();
+      const name = document.getElementById('custRegName').value.trim();
+      const phone = document.getElementById('custRegPhone').value.trim();
+      const address = document.getElementById('custRegAddress').value.trim();
+      const mapUrl = document.getElementById('custRegMapUrl').value.trim();
+      const pass = document.getElementById('custRegPass').value;
+
+      if (type === 'wholesale' && !shopName) return alert('കടയുടെ പേര് നൽകണം!');
+
+      const newRecord = { type, shopName: type === 'wholesale' ? shopName : '', name, phone, address, mapUrl, pass };
+      registeredShops.push(newRecord);
+      localStorage.setItem('moms_registered_shops', JSON.stringify(registeredShops));
+
+      currentShop = newRecord;
+      localStorage.setItem('moms_active_shop', JSON.stringify(currentShop));
+
+      closeModal('customerAuthModal');
+      updateCustomerHeader();
+      alert('Account registered successfully!');
+    }
+
+    function handleCustomerLogin(e) {
+      e.preventDefault();
+      const id = document.getElementById('custAuthLoginId').value.trim();
+      const pass = document.getElementById('custAuthLoginPass').value;
+      const found = registeredShops.find(s => (s.phone === id || (s.shopName && s.shopName.toLowerCase() === id.toLowerCase()) || s.name.toLowerCase() === id.toLowerCase()) && s.pass === pass);
+      if (found) {
+        currentShop = found;
+        localStorage.setItem('moms_active_shop', JSON.stringify(currentShop));
+        closeModal('customerAuthModal');
+        updateCustomerHeader();
+      } else {
+        alert('Invalid login credentials!');
+      }
+    }
+
+    function openCustomerProfile() {
+      if (!currentShop) return;
+      const isW = currentShop.type === 'wholesale';
+      document.getElementById('profModalTitle').innerText = isW ? `🏬 ${currentShop.shopName}` : `👤 ${currentShop.name}`;
+      document.getElementById('profModalSub').innerText = `${isW ? 'Owner: ' + currentShop.name : 'Customer'} | 📞 ${currentShop.phone}`;
+      document.getElementById('profModalAddress').innerText = currentShop.address;
+      
+      const mapWrap = document.getElementById('profModalMapLinkWrapper');
+      if (currentShop.mapUrl) {
+        mapWrap.innerHTML = `<a href="${currentShop.mapUrl}" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:underline"><i class="fa-solid fa-map-location-dot"></i> View Google Maps Location</a>`;
+      } else {
+        mapWrap.innerHTML = `<span class="text-[10px] text-slate-400">No GPS coordinates saved.</span>`;
+      }
+
+      renderCustomerOrderHistory();
+      document.getElementById('customerProfileModal').classList.remove('hidden');
+    }
+
+    function renderCustomerOrderHistory() {
+      if (!currentShop) return;
+      const myOrders = allOrders.filter(o => o.phone === currentShop.phone);
+      const list = document.getElementById('customerOrderHistoryList');
+      list.innerHTML = '';
+      if (myOrders.length === 0) {
+        list.innerHTML = `<p class="text-slate-400 text-center py-2">No orders recorded yet.</p>`;
+      } else {
+        myOrders.forEach(ord => {
+          let statusBadge = `<span class="text-[9px] font-extrabold px-2 py-0.5 rounded bg-amber-100 text-amber-800">${ord.status || 'Received'}</span>`;
+          if (ord.status === 'Dispatched') statusBadge = `<span class="text-[9px] font-extrabold px-2 py-0.5 rounded bg-blue-100 text-blue-800">🚚 Dispatched</span>`;
+          if (ord.status === 'Delivered') statusBadge = `<span class="text-[9px] font-extrabold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">✓ Delivered</span>`;
+
+          const div = document.createElement('div');
+          div.className = "p-2.5 bg-slate-50 border rounded-2xl flex items-center justify-between";
+          div.innerHTML = `
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-[#ef4444] text-[11px]">${ord.billNo}</span>
+                ${statusBadge}
+              </div>
+              <div class="text-[9px] text-slate-500 mt-0.5">${ord.date} • Total: ₹${ord.total}</div>
+            </div>
+            <button type="button" onclick="displayPrintableInvoice('${ord.billNo}')" class="px-2.5 py-1 bg-slate-800 text-white rounded-lg font-bold text-[10px] active:bg-[#ef4444]">
+              Bill
+            </button>
+          `;
+          list.appendChild(div);
+        });
+      }
+    }
+
+    function logoutCustomer() {
+      currentShop = null;
+      localStorage.removeItem('moms_active_shop');
+      closeModal('customerProfileModal');
+      updateCustomerHeader();
+    }
+
+    function handleCategoryFilter(cat) { 
+      activeFilter = cat; 
+      document.getElementById('activeFilterLabel').innerText = cat === 'all' ? '"All Products"' : `"${cat}"`;
+      renderStorefront(); 
+      if (window.innerWidth < 768) {
+        document.getElementById('mainSidebar').classList.add('hidden');
+      }
+    }
+
+    function filterByCategory(cat) {
+      document.getElementById('headerCategorySelect').value = cat;
+      handleCategoryFilter(cat);
+    }
+
+    function handleSearch(val) { currentSearch = val.toLowerCase().trim(); renderStorefront(); }
+    function handleSort(val) { currentSort = val; renderStorefront(); }
+    function applyPriceFilter() {
+      minPrice = Number(document.getElementById('minPriceInput').value) || null;
+      maxPrice = Number(document.getElementById('maxPriceInput').value) || null;
+      renderStorefront();
+      if (window.innerWidth < 768) {
+        document.getElementById('mainSidebar').classList.add('hidden');
+      }
+    }
+
+    function clearAllFilters() {
+      activeFilter = 'all'; currentSearch = ''; currentSort = 'featured'; minPrice = null; maxPrice = null;
+      document.getElementById('storeSearchInput').value = '';
+      document.getElementById('minPriceInput').value = '';
+      document.getElementById('maxPriceInput').value = '';
+      document.getElementById('headerCategorySelect').value = 'all';
+      document.getElementById('activeFilterLabel').innerText = '"All Products"';
+      renderStorefront();
+    }
+
+    function resolveProductPrice(prod, qty = 1) {
+      if (tradingMode === 'retail') return Number(prod.retailPrice || 50);
+      const baseWholesale = Number(prod.wholesalePrice || 40);
+      const t1Qty = Number(prod.tier1Qty || 10);
+      const t1Price = Number(prod.tier1Price || baseWholesale);
+      const t2Qty = Number(prod.tier2Qty || 50);
+      const t2Price = Number(prod.tier2Price || t1Price);
+
+      if (qty >= t2Qty && prod.tier2Price) return t2Price;
+      if (qty >= t1Qty && prod.tier1Price) return t1Price;
+      return baseWholesale;
+    }
+
+    function renderStorefront() {
+      const grid = document.getElementById('productGrid');
+      const emptyState = document.getElementById('emptyStoreState');
+      const counter = document.getElementById('productCount');
+
+      let list = [...products];
+      if (activeFilter !== 'all') list = list.filter(p => p.category === activeFilter);
+      if (currentSearch) list = list.filter(p => p.name.toLowerCase().includes(currentSearch) || (p.desc && p.desc.toLowerCase().includes(currentSearch)));
+
+      list.forEach(p => { p.activePrice = resolveProductPrice(p, 1); });
+
+      if (minPrice !== null) list = list.filter(p => p.activePrice >= minPrice);
+      if (maxPrice !== null) list = list.filter(p => p.activePrice <= maxPrice);
+
+      if (currentSort === 'price-low') list.sort((a,b) => a.activePrice - b.activePrice);
+      if (currentSort === 'price-high') list.sort((a,b) => b.activePrice - a.activePrice);
+
+      counter.innerText = `${list.length} items`;
+
+      if (list.length === 0) {
+        emptyState.classList.remove('hidden');
+        grid.classList.add('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      grid.classList.remove('hidden');
+      grid.innerHTML = '';
+
+      list.forEach((p) => {
+        const origIdx = products.indexOf(p);
+        const discount = p.mrp > 0 ? Math.max(0, Math.round(((p.mrp - p.activePrice) / p.mrp) * 100)) : 0;
+        const isInStock = p.inStock !== false;
+        const card = document.createElement('div');
+        card.className = "bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between group";
+        
+        let bulkBadge = '';
+        if (tradingMode === 'wholesale' && p.tier1Price) {
+          bulkBadge = `<div class="mt-0.5 text-[9px] text-amber-900 bg-amber-100 px-1.5 py-0.5 rounded font-bold truncate">Bulk: ${p.tier1Qty}+ @ ₹${p.tier1Price}</div>`;
+        }
+
+        const stockLabel = isInStock ? `<span class="absolute bottom-1.5 right-1.5 bg-emerald-100 text-emerald-800 text-[8px] font-black px-1.5 py-0.5 rounded">IN STOCK</span>` : `<span class="absolute bottom-1.5 right-1.5 bg-red-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded">OUT</span>`;
+
+        card.innerHTML = `
+          <div class="relative bg-slate-50/80 p-2 sm:p-3 aspect-square flex items-center justify-center cursor-pointer" onclick="openProductDetails(${origIdx})">
+            <span class="absolute top-1.5 left-1.5 ${tradingMode === 'wholesale' ? 'bg-[#ef4444]' : 'bg-emerald-600'} text-white text-[8px] sm:text-[9px] font-black px-1.5 py-0.5 rounded-md shadow">
+              ${discount}% OFF
+            </span>
+            ${stockLabel}
+            <img src="${p.image || 'https://via.placeholder.com/300x300?text=King+Moms'}" class="h-full object-contain group-hover:scale-105 transition duration-300 ${!isInStock ? 'opacity-40 grayscale' : ''}">
+          </div>
+          <div class="p-2 sm:p-3 flex flex-col justify-between flex-1">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="text-[9px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded truncate max-w-[80px]">${p.category || 'Food'}</span>
+                <span class="w-2.5 h-2.5 border border-green-600 p-[1px] rounded-[1px] bg-white flex items-center justify-center flex-shrink-0">
+                  <span class="w-1 h-1 rounded-full bg-green-600"></span>
+                </span>
+              </div>
+              <h4 onclick="openProductDetails(${origIdx})" class="font-bold text-slate-900 text-xs sm:text-sm mt-1 cursor-pointer hover:text-[#ef4444] line-clamp-1 leading-tight">${p.name}</h4>
+              <p class="text-[10px] text-slate-500 font-semibold">${p.weight}</p>
+              
+              <div class="flex items-baseline gap-1.5 mt-1">
+                <span class="text-xs sm:text-sm font-extrabold text-[#ef4444]">₹${p.activePrice}</span>
+                <span class="text-[9px] text-slate-400 line-through">₹${p.mrp}</span>
+              </div>
+              ${bulkBadge}
+            </div>
+
+            <div class="grid grid-cols-2 gap-1.5 mt-2 pt-1 border-t">
+              <button type="button" onclick="addToCartByIndex(${origIdx})" ${!isInStock ? 'disabled' : ''} class="py-1.5 ${isInStock ? 'bg-amber-100 text-amber-950 active:bg-amber-200' : 'bg-slate-100 text-slate-400 cursor-not-allowed'} rounded-lg text-[10px] sm:text-xs font-bold transition flex items-center justify-center">
+                + Cart
+              </button>
+              <button type="button" onclick="quickOrderWhatsApp(${origIdx})" ${!isInStock ? 'disabled' : ''} class="py-1.5 ${isInStock ? 'bg-[#ef4444] text-white active:bg-red-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed'} rounded-lg text-[10px] sm:text-xs font-bold transition flex items-center justify-center">
+                Buy
+              </button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function openProductDetails(idx) {
+      selectedModalProduct = products[idx];
+      if (!selectedModalProduct) return;
+      const p = selectedModalProduct;
+      const isInStock = p.inStock !== false;
+      const activePrice = resolveProductPrice(p, 1);
+      const discount = p.mrp > 0 ? Math.max(0, Math.round(((p.mrp - activePrice) / p.mrp) * 100)) : 0;
+
+      document.getElementById('detailModalImg').src = p.image || 'https://via.placeholder.com/400';
+      document.getElementById('detailModalCategory').innerText = p.category;
+      document.getElementById('detailModalTitle').innerText = p.name;
+      document.getElementById('detailModalDiscountLabel').innerText = `-${discount}%`;
+      document.getElementById('detailModalOffer').innerText = `₹${activePrice}`;
+      document.getElementById('detailModalMrp').innerText = `₹${p.mrp}`;
+      document.getElementById('detailModalWeight').innerText = p.weight;
+      document.getElementById('detailModalDescription').innerText = p.desc || 'Premium hygienic food products supplied by King Moms, Haripad.';
+      document.getElementById('detailModalFssai').innerText = appConfig.fssaiNumber || '11324001000123';
+
+      const bulkContainer = document.getElementById('modalBulkTiersContainer');
+      const bulkTable = document.getElementById('bulkTiersTable');
+      if (p.tier1Price || p.tier2Price) {
+        bulkContainer.classList.remove('hidden');
+        bulkTable.innerHTML = `
+          <div>1 - ${(p.tier1Qty || 10) - 1} packs: <strong>₹${p.wholesalePrice}/pack</strong></div>
+          ${p.tier1Price ? `<div>${p.tier1Qty}+ packs: <strong>₹${p.tier1Price}/pack</strong></div>` : ''}
+          ${p.tier2Price ? `<div>${p.tier2Qty}+ packs: <strong>₹${p.tier2Price}/pack</strong></div>` : ''}
+        `;
+      } else {
+        bulkContainer.classList.add('hidden');
+      }
+
+      const stockTag = document.getElementById('detailModalStockTag');
+      const stockText = document.getElementById('detailModalStockText');
+      const addBtn = document.getElementById('detailModalAddToCartBtn');
+      const buyBtn = document.getElementById('detailModalBuyNowBtn');
+
+      if (isInStock) {
+        stockTag.className = "absolute top-2 left-2 text-[8px] font-black px-2 py-0.5 rounded shadow bg-emerald-600 text-white";
+        stockTag.innerText = "IN STOCK";
+        stockText.className = "text-emerald-600 font-bold";
+        stockText.innerText = "Available";
+        addBtn.disabled = false;
+        buyBtn.disabled = false;
+        addBtn.className = "py-2.5 bg-amber-400 hover:bg-amber-500 text-slate-950 rounded-xl text-xs font-extrabold shadow transition flex items-center justify-center gap-1.5 active:scale-95";
+        buyBtn.className = "py-2.5 bg-[#ef4444] hover:bg-red-700 text-white rounded-xl text-xs font-bold shadow transition flex items-center justify-center gap-1.5 active:scale-95";
+      } else {
+        stockTag.className = "absolute top-2 left-2 text-[8px] font-black px-2 py-0.5 rounded shadow bg-red-600 text-white";
+        stockTag.innerText = "OUT OF STOCK";
+        stockText.className = "text-red-600 font-bold";
+        stockText.innerText = "Unavailable";
+        addBtn.disabled = true;
+        buyBtn.disabled = true;
+        addBtn.className = "py-2.5 bg-slate-200 text-slate-400 rounded-xl text-xs font-bold cursor-not-allowed flex items-center justify-center gap-1.5";
+        buyBtn.className = "py-2.5 bg-slate-200 text-slate-400 rounded-xl text-xs font-bold cursor-not-allowed flex items-center justify-center gap-1.5";
+      }
+
+      document.getElementById('productDetailsModal').classList.remove('hidden');
+    }
+
+    function addToCartFromModal() {
+      if (!selectedModalProduct) return;
+      const idx = products.indexOf(selectedModalProduct);
+      if (idx > -1) addToCartByIndex(idx);
+      closeModal('productDetailsModal');
+    }
+
+    function buyNowFromModal() {
+      if (!selectedModalProduct) return;
+      const idx = products.indexOf(selectedModalProduct);
+      if (idx > -1) quickOrderWhatsApp(idx);
+    }
+
+    /* ---------------- CART & CHECKOUT ENGINE ---------------- */
+    function addToCartByIndex(idx) {
+      const p = products[idx];
+      if (!p || p.inStock === false) return;
+      const existing = cart.find(item => item.name === p.name && item.weight === p.weight);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        cart.push({ ...p, qty: 1 });
+      }
+      saveCart();
+      updateCartBadge();
+      openCartDrawer();
+    }
+
+    function saveCart() {
+      localStorage.setItem('moms_cart', JSON.stringify(cart));
+    }
+
+    function updateCartBadge() {
+      const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+      document.getElementById('cartCountBadge').innerText = totalItems;
+    }
+
+    function calculateCartTotal() {
+      return cart.reduce((sum, item) => {
+        const unitPrice = resolveProductPrice(item, item.qty);
+        return sum + (unitPrice * item.qty);
+      }, 0);
+    }
+
+    function openCartDrawer() {
+      const list = document.getElementById('cartItemsList');
+      const notice = document.getElementById('cartShopNotice');
+      const moqAlert = document.getElementById('cartMoqAlert');
+      const upiOpt = document.getElementById('upiRadioOptionContainer');
+
+      upiOpt.classList.toggle('hidden', !appConfig.upiId);
+
+      if (currentShop) {
+        notice.className = "mb-2 p-2 rounded-xl text-[11px] bg-blue-50 text-blue-900 border border-blue-200 font-semibold";
+        notice.innerHTML = `Delivering to: <strong>${currentShop.shopName || currentShop.name}</strong> (${currentShop.phone})`;
+      } else {
+        notice.className = "mb-2 p-2 rounded-xl text-[11px] bg-amber-50 text-amber-900 border border-amber-200 flex items-center justify-between";
+        notice.innerHTML = `<span>Guest Checkout</span> <button type="button" onclick="closeModal('cartDrawer'); openCustomerAuthModal();" class="underline font-bold text-[#ef4444]">Sign In</button>`;
+      }
+
+      list.innerHTML = '';
+      if (cart.length === 0) {
+        list.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Your order cart is empty.</p>`;
+        document.getElementById('cartSubtotal').innerText = "₹0";
+        moqAlert.classList.add('hidden');
+        document.getElementById('cartDrawer').classList.remove('hidden');
+        return;
+      }
+
+      let totalQty = 0;
+      let totalVal = 0;
+
+      cart.forEach((item, index) => {
+        const unitPrice = resolveProductPrice(item, item.qty);
+        const lineTotal = unitPrice * item.qty;
+        totalQty += item.qty;
+        totalVal += lineTotal;
+
+        const row = document.createElement('div');
+        row.className = "flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border text-xs";
+        row.innerHTML = `
+          <div class="flex-1 min-w-0 pr-2">
+            <div class="font-bold text-slate-900 truncate">${item.name}</div>
+            <div class="text-[10px] text-slate-500">${item.weight} • ₹${unitPrice}/unit</div>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button type="button" onclick="changeCartQty(${index}, -1)" class="w-6 h-6 bg-white border rounded font-bold">-</button>
+            <span class="font-bold w-5 text-center">${item.qty}</span>
+            <button type="button" onclick="changeCartQty(${index}, 1)" class="w-6 h-6 bg-white border rounded font-bold">+</button>
+            <span class="font-bold text-[#ef4444] w-12 text-right">₹${lineTotal}</span>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+
+      document.getElementById('cartSubtotal').innerText = `₹${totalVal}`;
+
+      if (tradingMode === 'wholesale' && (totalQty < (appConfig.minWholesaleQty || 5) && totalVal < (appConfig.minWholesaleValue || 300))) {
+        moqAlert.classList.remove('hidden');
+        document.getElementById('cartMoqAlertText').innerText = `Wholesale MOQ: Minimum ${appConfig.minWholesaleQty || 5} packs or ₹${appConfig.minWholesaleValue || 300} required.`;
+      } else {
+        moqAlert.classList.add('hidden');
+      }
+
+      document.getElementById('cartDrawer').classList.remove('hidden');
+    }
+
+    function changeCartQty(idx, delta) {
+      cart[idx].qty += delta;
+      if (cart[idx].qty <= 0) cart.splice(idx, 1);
+      saveCart();
+      updateCartBadge();
+      openCartDrawer();
+    }
+
+    function quickOrderWhatsApp(idx) {
+      const p = products[idx];
+      if (!p) return;
+      const price = resolveProductPrice(p, 1);
+      const cleanPhone = (appConfig.whatsappNumber || "919999999999").replace(/\D/g, '');
+      const msg = `*KING MOMS QUICK ORDER*\nItem: ${p.name} (${p.weight})\nMode: ${tradingMode.toUpperCase()}\nPrice: ₹${price}\nCustomer: ${currentShop ? (currentShop.shopName || currentShop.name) : 'Guest'}`;
+      window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    async function checkoutCartWhatsApp() {
+      if (cart.length === 0) return alert("Cart is empty!");
+      const totalVal = calculateCartTotal();
+      const totalQty = cart.reduce((s, i) => s + i.qty, 0);
+
+      if (tradingMode === 'wholesale' && totalQty < (appConfig.minWholesaleQty || 5) && totalVal < (appConfig.minWholesaleValue || 300)) {
+        return alert(`Wholesale ഓർഡറിന് കുറഞ്ഞത് ${appConfig.minWholesaleQty || 5} പാക്കറ്റ് അല്ലെങ്കിൽ ₹${appConfig.minWholesaleValue || 300} വേണം.`);
+      }
+
+      const billNo = "KM-" + Math.floor(100000 + Math.random() * 900000);
+      const dateStr = new Date().toLocaleDateString('en-IN');
+      const custName = currentShop ? (currentShop.shopName || currentShop.name) : "Walk-in / Guest";
+      const custPhone = currentShop ? currentShop.phone : "N/A";
+      const custAddress = currentShop ? currentShop.address : "Haripad Local";
+      const mapUrl = currentShop ? (currentShop.mapUrl || "") : "";
+
+      const orderItems = cart.map(i => ({
+        name: i.name,
+        weight: i.weight,
+        qty: i.qty,
+        rate: resolveProductPrice(i, i.qty),
+        total: resolveProductPrice(i, i.qty) * i.qty
+      }));
+
+      const newOrder = {
+        billNo,
+        date: dateStr,
+        customerName: custName,
+        phone: custPhone,
+        address: custAddress,
+        mapUrl,
+        tradingMode,
+        paymentMode: selectedPaymentMode,
+        items: orderItems,
+        total: totalVal,
+        status: 'Received'
+      };
+
+      allOrders.unshift(newOrder);
+      localStorage.setItem('moms_all_orders', JSON.stringify(allOrders));
+
+      if (sbClient) {
+        await sbClient.from('orders').insert([{
+          id: billNo,
+          bill_no: billNo,
+          date: dateStr,
+          customer_name: custName,
+          phone: custPhone,
+          address: custAddress,
+          map_url: mapUrl,
+          trading_mode: tradingMode,
+          payment_mode: selectedPaymentMode,
+          items: orderItems,
+          items_summary: orderItems.map(x => `${x.name} x${x.qty}`).join(', '),
+          total: totalVal,
+          status: 'Received'
+        }]);
+      }
+
+      const itemsText = orderItems.map(i => `• ${i.name} (${i.weight}) x ${i.qty} = ₹${i.total}`).join('\n');
+      const cleanPhone = (appConfig.whatsappNumber || "919999999999").replace(/\D/g, '');
+      const waText = `*KING MOMS ORDER (${billNo})*\nDate: ${dateStr}\nCustomer: ${custName} (${custPhone})\nAddress: ${custAddress}\nMode: ${tradingMode.toUpperCase()} | Pay: ${selectedPaymentMode}\n\n*Items:*\n${itemsText}\n\n*Grand Total: ₹${totalVal}*`;
+
+      cart = [];
+      saveCart();
+      updateCartBadge();
+      closeModal('cartDrawer');
+      displayPrintableInvoice(billNo);
+      window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(waText)}`, '_blank');
+    }
+
+    function displayPrintableInvoice(billNo) {
+      const ord = allOrders.find(o => o.billNo === billNo);
+      if (!ord) return;
+      document.getElementById('invFssai').innerText = appConfig.fssaiNumber || '11324001000123';
+      document.getElementById('invNo').innerText = ord.billNo;
+      document.getElementById('invDate').innerText = ord.date;
+      document.getElementById('invStatus').innerText = ord.status;
+      document.getElementById('invCustName').innerText = ord.customerName;
+      document.getElementById('invCustPhone').innerText = ord.phone;
+      document.getElementById('invCustAddress').innerText = ord.address;
+      document.getElementById('invTradingMode').innerText = ord.tradingMode;
+      document.getElementById('invPaymentMode').innerText = ord.paymentMode;
+      document.getElementById('invGrandTotal').innerText = `₹${ord.total}`;
+
+      const tbody = document.getElementById('invItemsTable');
+      tbody.innerHTML = '';
+      (ord.items || []).forEach(it => {
+        tbody.innerHTML += `
+          <tr>
+            <td class="p-2">${it.name} (${it.weight})</td>
+            <td class="p-2 text-center">${it.qty}</td>
+            <td class="p-2 text-right">₹${it.rate}</td>
+            <td class="p-2 text-right">₹${it.total}</td>
+          </tr>
+        `;
+      });
+      document.getElementById('printableInvoiceModal').classList.remove('hidden');
+    }
+
+    /* ---------------- ADMIN DASHBOARD & MANUAL SUPABASE ---------------- */
+    function openAdminModal() {
+      if (currentRole) {
+        document.getElementById('dashboardModal').classList.remove('hidden');
+        populateAdminDashboard();
+      } else {
+        document.getElementById('loginModal').classList.remove('hidden');
+      }
+    }
+
+    function handleAdminLogin(e) {
+      e.preventDefault();
+      const user = document.getElementById('adminLoginUser').value.trim();
+      const pass = document.getElementById('adminLoginPass').value.trim();
+      const errEl = document.getElementById('adminLoginErr');
+
+      if (user === appConfig.ownerUsername && pass === appConfig.ownerPassword) {
+        currentRole = 'owner';
+      } else if (user === appConfig.staffId) {
+        currentRole = 'staff';
+      } else {
+        errEl.innerText = "Invalid Username or Password!";
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      errEl.classList.add('hidden');
+      closeModal('loginModal');
+      document.getElementById('dashboardModal').classList.remove('hidden');
+      populateAdminDashboard();
+    }
+
+    function logoutAdmin() {
+      currentRole = null;
+      closeModal('dashboardModal');
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.className = "tab-btn px-3 py-1.5 font-bold border-b-2 border-transparent text-slate-500";
+      });
+      document.getElementById(tabId).classList.remove('hidden');
+      document.getElementById('tabBtn-' + tabId).className = "tab-btn px-3 py-1.5 font-bold border-b-2 border-[#ef4444] text-[#ef4444]";
+    }
+
+    function populateAdminDashboard() {
+      const badge = document.getElementById('userRoleBadge');
+      badge.innerText = currentRole === 'owner' ? 'SUPER ADMIN (OWNER)' : 'STAFF ACCESS';
+      badge.className = currentRole === 'owner' ? 'text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-red-100 text-red-700' : 'text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700';
+
+      document.querySelectorAll('.owner-tab').forEach(el => {
+        el.classList.toggle('hidden', currentRole !== 'owner');
+      });
+
+      document.getElementById('sbProjectUrl').value = appConfig.supabaseUrl || '';
+      document.getElementById('sbAnonKey').value = appConfig.supabaseKey || '';
+      document.getElementById('settingFssai').value = appConfig.fssaiNumber || '';
+      document.getElementById('settingRouteSchedule').value = appConfig.routeSchedule || '';
+      document.getElementById('settingWhatsapp').value = appConfig.whatsappNumber || '';
+      document.getElementById('settingUpiId').value = appConfig.upiId || '';
+
+      renderAdminTable();
+      renderAdminOrdersTable();
+      renderAdminChatInbox();
+      renderCMSCategories();
+      renderRegisteredShopsTable();
+    }
+
+    async function saveProduct(e) {
+      e.preventDefault();
+      const name = document.getElementById('prodName').value.trim();
+      const category = document.getElementById('prodCategory').value;
+      const inStock = document.getElementById('prodInStock').value === 'true';
+      const weight = document.getElementById('prodWeight').value.trim();
+      const mrp = Number(document.getElementById('prodMrp').value);
+      const retailPrice = Number(document.getElementById('prodRetailPrice').value);
+      const wholesalePrice = Number(document.getElementById('prodWholesalePrice').value);
+      const tier1Qty = Number(document.getElementById('prodTier1Qty').value) || 10;
+      const tier1Price = Number(document.getElementById('prodTier1Price').value) || null;
+      const tier2Qty = Number(document.getElementById('prodTier2Qty').value) || 50;
+      const tier2Price = Number(document.getElementById('prodTier2Price').value) || null;
+      const desc = document.getElementById('prodDesc').value.trim();
+      const fileInput = document.getElementById('prodImage');
+
+      const finalizeSave = async (imgData) => {
+        const newProd = {
+          id: 'prod_' + Date.now(),
+          name, category, inStock, weight, mrp, retailPrice, wholesalePrice,
+          tier1Qty, tier1Price, tier2Qty, tier2Price, desc, image: imgData
+        };
+
+        if (sbClient) {
+          const { error } = await sbClient.from('products').insert([{
+            name, category, in_stock: inStock, weight, mrp,
+            retail_price: retailPrice, wholesale_price: wholesalePrice,
+            tier1_qty: tier1Qty, tier1_price: tier1Price,
+            tier2_qty: tier2Qty, tier2_price: tier2Price,
+            description: desc, image: imgData
+          }]);
+          if (error) alert("Supabase Save Error: " + error.message);
+          else fetchProductsFromSupabase();
+        } else {
+          products.unshift(newProd);
+          localStorage.setItem('moms_products', JSON.stringify(products));
+          renderStorefront();
+          renderAdminTable();
+        }
+
+        window.capturedProductImage = null;
+        document.getElementById('addProductForm').reset();
+        alert("Product Saved!");
+      };
+
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (ev) => finalizeSave(ev.target.result);
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        finalizeSave(window.capturedProductImage || '');
+      }
+    }
+
+    function renderAdminTable() {
+      const tbody = document.getElementById('adminProductTable');
+      tbody.innerHTML = '';
+      products.forEach((p, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="p-2"><img src="${p.image || 'https://via.placeholder.com/40'}" class="w-9 h-9 object-cover rounded"></td>
+          <td class="p-2 font-bold">${p.name} <span class="text-[10px] text-slate-400">(${p.weight})</span></td>
+          <td class="p-2"><button type="button" onclick="toggleProductStock(${idx})" class="px-2 py-0.5 rounded text-[10px] font-bold ${p.inStock !== false ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-700'}">${p.inStock !== false ? 'In Stock' : 'Out'}</button></td>
+          <td class="p-2">₹${p.retailPrice}</td>
+          <td class="p-2">₹${p.wholesalePrice}</td>
+          <td class="p-2 text-right"><button type="button" onclick="deleteProduct(${idx})" class="text-red-600 font-bold px-2 py-1">Delete</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function toggleProductStock(idx) {
+      const p = products[idx];
+      const nextState = !(p.inStock !== false);
+      p.inStock = nextState;
+      if (sbClient && p.id) {
+        await sbClient.from('products').update({ in_stock: nextState }).eq('id', p.id);
+      }
+      localStorage.setItem('moms_products', JSON.stringify(products));
+      renderAdminTable();
+      renderStorefront();
+    }
+
+    async function deleteProduct(idx) {
+      if (!confirm("Delete this product?")) return;
+      const p = products[idx];
+      if (sbClient && p.id) {
+        await sbClient.from('products').delete().eq('id', p.id);
+      }
+      products.splice(idx, 1);
+      localStorage.setItem('moms_products', JSON.stringify(products));
+      renderAdminTable();
+      renderStorefront();
+    }
+
+    function renderAdminOrdersTable() {
+      const tbody = document.getElementById('adminOrdersTableBody');
+      tbody.innerHTML = '';
+      allOrders.forEach((o, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="p-2 font-bold text-[#ef4444]">${o.billNo}</td>
+          <td class="p-2"><strong>${o.customerName}</strong><br><span class="text-[10px] text-slate-500">${o.phone}</span></td>
+          <td class="p-2 font-bold">₹${o.total}</td>
+          <td class="p-2"><span class="px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-bold text-[10px]">${o.status}</span></td>
+          <td class="p-2 text-center">
+            <select onchange="updateOrderStatus(${idx}, this.value)" class="border rounded p-1 text-[10px]">
+              <option value="Received" ${o.status === 'Received' ? 'selected' : ''}>Received</option>
+              <option value="Dispatched" ${o.status === 'Dispatched' ? 'selected' : ''}>Dispatched</option>
+              <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+            </select>
+          </td>
+          <td class="p-2 text-right"><button type="button" onclick="displayPrintableInvoice('${o.billNo}')" class="px-2 py-1 bg-slate-800 text-white rounded text-[10px]">View</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function updateOrderStatus(idx, newStatus) {
+      const ord = allOrders[idx];
+      ord.status = newStatus;
+      localStorage.setItem('moms_all_orders', JSON.stringify(allOrders));
+      if (sbClient) {
+        await sbClient.from('orders').update({ status: newStatus }).eq('bill_no', ord.billNo);
+      }
+      renderAdminOrdersTable();
+    }
+
+    function renderAdminChatInbox() {
+      const area = document.getElementById('adminChatMessagesArea');
+      area.innerHTML = '';
+      chatMessages.forEach(m => {
+        const div = document.createElement('div');
+        div.className = "p-2 rounded-lg border bg-white";
+        div.innerHTML = `<div class="text-[10px] font-bold text-[#ef4444]">${m.sender === 'admin' ? 'Admin Reply' : (m.userTag || 'Customer')} <span class="text-slate-400 font-normal">(${m.time})</span></div><div>${m.text}</div>`;
+        area.appendChild(div);
+      });
+    }
+
+    async function handleAdminSendReply(e) {
+      e.preventDefault();
+      const input = document.getElementById('adminReplyInput');
+      const text = input.value.trim();
+      if (!text) return;
+      const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      if (sbClient) {
+        await sbClient.from('chats').insert([{ user_sender: 'admin', user_tag: 'King Moms Support', text, time: timeStr }]);
+      } else {
+        chatMessages.push({ sender: 'admin', text, time: timeStr });
+        localStorage.setItem('moms_chat_messages', JSON.stringify(chatMessages));
+        renderChatStream();
+        renderAdminChatInbox();
+      }
+      input.value = '';
+    }
+
+    function clearAdminChatHistory() {
+      chatMessages = [];
+      localStorage.setItem('moms_chat_messages', JSON.stringify(chatMessages));
+      renderChatStream();
+      renderAdminChatInbox();
+    }
+
+    function renderCMSCategories() {
+      const tbody = document.getElementById('cmsCategoryTableBody');
+      tbody.innerHTML = '';
+      customCategories.forEach((c, idx) => {
+        tbody.innerHTML += `
+          <tr>
+            <td class="p-1"><input type="text" value="${c.id}" onchange="customCategories[${idx}].id=this.value" class="border p-1 rounded w-full"></td>
+            <td class="p-1"><input type="text" value="${c.en}" onchange="customCategories[${idx}].en=this.value" class="border p-1 rounded w-full"></td>
+            <td class="p-1"><input type="text" value="${c.ml}" onchange="customCategories[${idx}].ml=this.value" class="border p-1 rounded w-full"></td>
+            <td class="p-1 text-right"><button type="button" onclick="customCategories.splice(${idx},1); renderCMSCategories();" class="text-red-600 font-bold">X</button></td>
+          </tr>
+        `;
+      });
+    }
+
+    function addNewCategoryRow() {
+      customCategories.push({ id: "New Cat", en: "New Category", ml: "പുതിയ വിഭാഗം" });
+      renderCMSCategories();
+    }
+
+    function saveAllCMSContent() {
+      localStorage.setItem('moms_custom_cats', JSON.stringify(customCategories));
+      renderCategoryInterfaces();
+      alert("Categories Saved!");
+    }
+
+    function renderRegisteredShopsTable() {
+      const tbody = document.getElementById('registeredShopsTableBody');
+      tbody.innerHTML = '';
+      registeredShops.forEach(s => {
+        tbody.innerHTML += `
+          <tr>
+            <td class="p-2 font-bold">${s.shopName || s.name}</td>
+            <td class="p-2 uppercase text-[10px]">${s.type}</td>
+            <td class="p-2">${s.phone}</td>
+            <td class="p-2">${s.address}</td>
+            <td class="p-2 text-center">${s.mapUrl ? `<a href="${s.mapUrl}" target="_blank" class="text-blue-600 underline">Map</a>` : '-'}</td>
+          </tr>
+        `;
+      });
+    }
+
+    function exportToCSV(type) {
+      let data = type === 'orders' ? allOrders : (type === 'shops' ? registeredShops : products);
+      if (!data || data.length === 0) return alert("No data available to export.");
+      const keys = Object.keys(data[0]);
+      const csv = [keys.join(','), ...data.map(row => keys.map(k => `"${String(row[k] ?? '').replace(/"/g, '""')}"`).join(','))].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `king_moms_${type}.csv`;
+      a.click();
+    }
+
+    function saveNotificationAndPaymentSettings() {
+      appConfig.supabaseUrl = document.getElementById('sbProjectUrl').value.trim().replace(/[\[\]]/g, '');
+      appConfig.supabaseKey = document.getElementById('sbAnonKey').value.trim();
+      appConfig.fssaiNumber = document.getElementById('settingFssai').value.trim();
+      appConfig.routeSchedule = document.getElementById('settingRouteSchedule').value.trim();
+      appConfig.whatsappNumber = document.getElementById('settingWhatsapp').value.trim();
+      appConfig.upiId = document.getElementById('settingUpiId').value.trim();
+
+      localStorage.setItem('moms_config', JSON.stringify(appConfig));
+      initSupabase();
+      alert("Settings Saved!");
+    }
+
+    function updateOwnerCredentials() {
+      const u = document.getElementById('newOwnerUsername').value.trim();
+      const p = document.getElementById('newOwnerPassword').value.trim();
+      if (!u || !p) return alert("Enter both username and password.");
+      appConfig.ownerUsername = u;
+      appConfig.ownerPassword = p;
+      localStorage.setItem('moms_config', JSON.stringify(appConfig));
+      alert("Admin credentials updated!");
+    }
+  </script>
+</body>
+</html>
